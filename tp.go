@@ -122,9 +122,9 @@ func deleteDatabase(){
 		log.Fatal(err)
 	}
 }
-func definirPKs(db1 *sql.DB,err1 error){
+func definirPKs(db1 *sql.DB){
 	db := db1
-	err := err1
+	var err error
 	
 	 _, err = db.Exec(`alter table cliente add constraint
 	  cliente_pk primary key (nrocliente)`)
@@ -176,6 +176,37 @@ func definirPKs(db1 *sql.DB,err1 error){
     }
      _, err = db.Exec(`alter table alerta add constraint
 	  alerta_pk primary key (nroalerta)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+}
+func cargarClientes(db1 *sql.DB){
+	db := db1
+	var err error
+
+	 _, err = db.Exec(`
+	 insert into cliente values(2981775,'Juan','Peron','Sarmiento 362','4331-1775');
+	 insert into cliente values(2965465,'Nestor','Kirchner','Suipacha 1422','4327-0228');
+	 insert into cliente values(8979845,'Cristina','Kirchner','Av. San Juan 328','5299-2010');
+	 insert into cliente values(2313575,'Maria','Martinez','Av. Figueroa Alcorta 3415','4808-6500');
+	 insert into cliente values(6267429,'Antonio','Cafiero','Av. del Libertador 8151','5280-0750');
+	 insert into cliente values(5618468,'Carlos','Menem','Av. del Libertador 999','4800-1888');
+	 insert into cliente values(1568484,'Alberto','Fernandez','Chacabuco 955','4362-5963');
+	 insert into cliente values(1568432,'Jose','Gioja','Guevara 492','4553-9440');
+	 insert into cliente values(6549832,'Luis','Barrionuevo','Av. Angel Gallardo 470','4822-8340');
+	 insert into cliente values(8785512,'Eva','Peron','Tomás de Anchorena 1660','4982-6595');
+	 insert into cliente values(7878798,'Homero','Simpson','Jean Jaures 735','4784-4040');
+	 insert into cliente values(2135484,'Marge','Simpson','Av. Santa Fe 702','4342-3001');
+	 insert into cliente values(0211541,'Bartolomeo','Simpson','Juramento 2291','4774-9452');
+	 insert into cliente values(5421054,'Lisa','Simpson','Av. San Juan 350','4301-1080');
+	 insert into cliente values(2161054,'Apu','Nahasapeemape','Av. del Libertador 2373','4361-4419');
+	 insert into cliente values(3487910,'Martin','Price','Av. Infanta Isabel 555','4433-3396');
+	 insert into cliente values(0216546,'Selma','Bouvie',' Av. Pedro de Mendoza 1843','4343-2123');
+	 insert into cliente values(2105646,'Patty','Bouvie','Av. España 1701','4370-6105');
+	 insert into cliente values(8845660,'Barney','Gumble','Pujol 644','4893-0322');
+	 insert into cliente values(8520147,'Waylon','Smithers','Defensa 219','4362-1100');
+	 `)
 	  
     if err !=nil {
     	log.Fatal(err)
@@ -322,6 +353,7 @@ func main(){
     log.Fatal(err)
     } 
 
-    definirPKs(db,err)
+    definirPKs(db)
+    cargarClientes(db)
     
 }
