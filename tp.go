@@ -214,7 +214,39 @@ func cargarClientes(db1 *sql.DB){
     }
 }
 
-	
+func cargarComercio(db1 *sql.DB){
+	db := db1
+	var err error
+
+	 _, err = db.Exec(`
+	 insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1744','6541-6542');
+	 insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1614','6785-1354');
+	 insert into comercio values(9869845,'Supermercado Li','Crisóstomo Álvarez 2825','1406,'2251-5268');
+	 insert into comercio values(2314575,'Santeria Espacio Afrodita','Av.Juan Domingo Peron 1522','1663','4846-7639');
+	 insert into comercio values(2609429,'Burger King','Santa Rosa 1680','1714','6245-9214');
+	 insert into comercio values(6532468,'Garbarino','Av. Gral. Juan Manuel de Rosas 658','1712','5634-1480');
+	 insert into comercio values(8712384,'Fravega','Av. Rivadavia 11626','1408','46864-5674');
+	 insert into comercio values(3466632,'YPF','Av. Ricardo Balbin 1897','1650','4753-1745');
+	 insert into comercio values(5632132,'Maxiconsumo','Gaona Acceso Oeste 8676','1744','3214-8413');
+	 insert into comercio values(5570712,'Farmacia Fernandez','Bartolome Mitre 800','1742','9871-3587');
+	 
+	 insert into comercio values(7860698,'McDonalds','Arturo Jauretche 978','1969','6984-45289');
+	 insert into comercio values(2545384,'Coppel','Belgrano 3231','1650','3216-6512');
+	 insert into comercio values(4163701,'Libreria Rodriguez','Independencia 4647','1653','8431-3218');
+	 insert into comercio values(0923934,'Supermercado Dia','De la tradicion 185','1713','2451-9871');
+	 insert into comercio values(2105614,'Peluqueria paty','Gral. Lavalle 848','1714','8721-9852');
+	 insert into comercio values(4334530,'Santeria la paz','Vidal 1769','1426','8922-3265');
+	 insert into comercio values(2054706,'Fravega','Av. Lope de Vega 1520','1407','2154-3285');
+	 insert into comercio values(1287436,'YPF','Sta Rosa 2489','1712','8970-8132');
+	 insert into comercio values(9836840,'Cada del Audio','Rivadavia 2198','1714','4015-9872');
+	 insert into comercio values(5419987,'Burger King','Av. Bartolome Mitre','1744','0454-1134');
+	 `)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+}
+
 func main(){
 
     deleteDatabase()
@@ -327,4 +359,5 @@ func main(){
 
     definirPksYFks(db)
     cargarClientes(db)
+	cargarComercio(db)
 }
