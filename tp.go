@@ -122,6 +122,65 @@ func deleteDatabase(){
 		log.Fatal(err)
 	}
 }
+func definirPKs(db1 *sql.DB,err1 error){
+	db := db1
+	err := err1
+	
+	 _, err = db.Exec(`alter table cliente add constraint
+	  cliente_pk primary key (nrocliente)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table tarjeta add constraint
+	  tarjeta_pk primary key (nrotarjeta)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table comercio add constraint
+	  comercio_pk primary key (nrocomercio)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table compra add constraint
+	  compra_pk primary key (nrooperacion)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table rechazo add constraint
+	  rechazo_pk primary key (nrorechazo)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table cierre add constraint
+	  cierre_pk primary key (año,mes,terminacion)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table cabecera add constraint
+	  cabecera_pk primary key (nroresumen)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table detalle add constraint
+	  detalle_pk primary key (nroresumen,nrolinea)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+     _, err = db.Exec(`alter table alerta add constraint
+	  alerta_pk primary key (nroalerta)`)
+	  
+    if err !=nil {
+    	log.Fatal(err)
+    }
+}
 	
 func main(){
 
@@ -262,5 +321,7 @@ func main(){
     if err !=nil {
     log.Fatal(err)
     } 
+
+    definirPKs(db,err)
     
 }
