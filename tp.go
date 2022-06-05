@@ -142,14 +142,14 @@ func definirPksYFks(db1 *sql.DB){
 	 				   alter table detalle add constraint detalle_pk primary key (nroresumen, nrolinea);
 	 				   alter table alerta add constraint alerta_pk primary key (nroalerta);
 
-	 				   alter table tarjeta add constraint tarjeta_nrocliente_fk foreign key (nrocliente) references cliente (nrocliente);
+	 				   alter table tarjeta add constraint tarjeta_nrocliente_fk foreign key (nrocliente) references cliente(nrocliente);
 	 				   alter table compra add constraint compra_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table compra add constraint compra_nrocomerio_fk foreign key (nrocomercio) references comercio(nrocomercio);
 	 				   alter table rechazo add constraint rechazo_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table rechazo add constraint rechazo_nrocomerio_fk foreign key (nrocomercio) references comercio(nrocomercio);
-	 				   alter table cabecera add constraint cabecera_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta (nrotarjeta);
-	 				   alter table alerta add constraint alerta_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta (nrotarjeta);
-	 				   alter table alerta add constraint alerta_nrorechazoa_fk foreign key (nrorechazo) references rechazo (nrorechazo)`)
+	 				   alter table cabecera add constraint cabecera_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
+	 				   alter table alerta add constraint alerta_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
+	 				   alter table alerta add constraint alerta_nrorechazoa_fk foreign key (nrorechazo) references rechazo(nrorechazo);`)
     if err !=nil {
     	log.Fatal(err)
     }
@@ -203,49 +203,79 @@ func cargarClientes(db1 *sql.DB){
 	 				   insert into cliente values(2135484,'Marge','Simpson','Av. Santa Fe 702','4342-3001');
 	 				   insert into cliente values(0211541,'Bartolomeo','Simpson','Juramento 2291','4774-9452');
 	 				   insert into cliente values(5421054,'Lisa','Simpson','Av. San Juan 350','4301-1080');
-	 				   insert into cliente values(2161054,'Apu','Nahasapeemape','Av. del Libertador 2373','4361-4419');
+	 				   insert into cliente values(2161054,'Apu','Nahasapeesasolomoesolomoe','Av. del Libertador 2373','4361-4419');
 	 				   insert into cliente values(3487910,'Martin','Price','Av. Infanta Isabel 555','4433-3396');
 	 				   insert into cliente values(0216546,'Selma','Bouvie','Av. Pedro de Mendoza 1843','4343-2123');
 	 				   insert into cliente values(2105646,'Patty','Bouvie','Av. España 1701','4370-6105');
 	 				   insert into cliente values(8845660,'Barney','Gumble','Pujol 644','4893-0322');
-	 				   insert into cliente values(8520147,'Waylon','Smithers','Defensa 219','4362-1100');`)
+	 				   insert into cliente values(8520147,'Waylon','Smithers','Defensa 219','4362-1100')`)
     if err !=nil {
     	log.Fatal(err)
     }
 }
+
+
+func cargarTarjetas(db1 *sql.DB){
+	db := db1
+	var err error
+
+	 _, err = db.Exec(`insert into tarjeta values('4455674512546534', 2981775, '201106', '202306', '2020', 100000.00, 'vigente');
+	 				   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
+	 				   insert into tarjeta values('9438541511146093', 8979845, '201207', '202411', '8807', 110000.00, 'vigente');
+	 				   insert into tarjeta values('2988781555176533', 2313575, '201609', '202910', '1331', 140000.00, 'vigente');
+	 				   insert into tarjeta values('5610556817653930', 6267429, '201301', '202703', '6854', 120000.00, 'vigente');
+	 				   insert into tarjeta values('2783277803985152', 5618468, '201402', '202504', '8902', 130000.00, 'vigente');
+	 				   insert into tarjeta values('4905123783542322', 1568484, '201112', '202401', '6723', 105000.00, 'vigente');
+	 				   insert into tarjeta values('7125367183482819', 1568432, '201202', '202903', '0913', 155000.00, 'vigente');
+	 				   insert into tarjeta values('8172631238129381', 6549832, '201305', '202408', '6512', 115000.00, 'vigente');
+	 				   insert into tarjeta values('9182743719349715', 8785512, '201410', '202606', '0782', 165000.00, 'vigente');
+	 				   insert into tarjeta values('4812346279123678', 7878798, '201303', '202411', '9991', 125000.00, 'vigente');
+	 				   insert into tarjeta values('9823478185734782', 2135484, '201703', '203010', '8172', 175000.00, 'vigente');
+	 				   insert into tarjeta values('6767676712371263', 0211541, '202009', '203512', '1119', 160000.00, 'vigente');
+	 				   insert into tarjeta values('9009723487324881', 5421054, '201801', '203308', '7667', 101000.00, 'vigente');
+	 				   insert into tarjeta values('1554388976675265', 2161054, '201004', '202301', '1865', 191000.00, 'vigente');
+	 				   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
+	 				   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
+	 				   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
+	 				   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
+	 				   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
+	 				   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
+	 				   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	//tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
+    if err !=nil {
+    	log.Fatal(err)
+    }
+}
+
 
 func cargarComercio(db1 *sql.DB){
 	db := db1
 	var err error
 
-	 _, err = db.Exec(`
-	 insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1744','6541-6542');
-	 insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1614','6785-1354');
-	 insert into comercio values(9869845,'Supermercado Li','Crisóstomo Álvarez 2825','1406,'2251-5268');
-	 insert into comercio values(2314575,'Santeria Espacio Afrodita','Av.Juan Domingo Peron 1522','1663','4846-7639');
-	 insert into comercio values(2609429,'Burger King','Santa Rosa 1680','1714','6245-9214');
-	 insert into comercio values(6532468,'Garbarino','Av. Gral. Juan Manuel de Rosas 658','1712','5634-1480');
-	 insert into comercio values(8712384,'Fravega','Av. Rivadavia 11626','1408','46864-5674');
-	 insert into comercio values(3466632,'YPF','Av. Ricardo Balbin 1897','1650','4753-1745');
-	 insert into comercio values(5632132,'Maxiconsumo','Gaona Acceso Oeste 8676','1744','3214-8413');
-	 insert into comercio values(5570712,'Farmacia Fernandez','Bartolome Mitre 800','1742','9871-3587');
-	 
-	 insert into comercio values(7860698,'McDonalds','Arturo Jauretche 978','1969','6984-45289');
-	 insert into comercio values(2545384,'Coppel','Belgrano 3231','1650','3216-6512');
-	 insert into comercio values(4163701,'Libreria Rodriguez','Independencia 4647','1653','8431-3218');
-	 insert into comercio values(0923934,'Supermercado Dia','De la tradicion 185','1713','2451-9871');
-	 insert into comercio values(2105614,'Peluqueria paty','Gral. Lavalle 848','1714','8721-9852');
-	 insert into comercio values(4334530,'Santeria la paz','Vidal 1769','1426','8922-3265');
-	 insert into comercio values(2054706,'Fravega','Av. Lope de Vega 1520','1407','2154-3285');
-	 insert into comercio values(1287436,'YPF','Sta Rosa 2489','1712','8970-8132');
-	 insert into comercio values(9836840,'Cada del Audio','Rivadavia 2198','1714','4015-9872');
-	 insert into comercio values(5419987,'Burger King','Av. Bartolome Mitre','1744','0454-1134');
-	 `)
-	  
+	 _, err = db.Exec(`insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1744','6541-6542');
+	 				   insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1614','6785-1354');
+	 				   insert into comercio values(9869845,'Supermercado Li','Crisóstomo Álvarez 2825','1406','2251-5268');
+	 				   insert into comercio values(2314575,'Santeria Espacio Afrodita','Av.Juan Domingo Peron 1522','1663','4846-7639');
+	 				   insert into comercio values(2609429,'Burger King','Santa Rosa 1680','1714','6245-9214');
+	 				   insert into comercio values(6532468,'Garbarino','Av. Gral. Juan Manuel de Rosas 658','1712','5634-1480');
+	 				   insert into comercio values(8712384,'Fravega','Av. Rivadavia 11626','1408','46864-5674');
+	 				   insert into comercio values(3466632,'YPF','Av. Ricardo Balbin 1897','1650','4753-1745');
+	 				   insert into comercio values(5632132,'Maxiconsumo','Gaona Acceso Oeste 8676','1744','3214-8413');
+	 				   insert into comercio values(5570712,'Farmacia Fernandez','Bartolome Mitre 800','1742','9871-3587');
+	 				   insert into comercio values(7860698,'Mostaza','Arturo Jauretche 978','1969','6984-45289');
+	 				   insert into comercio values(2545384,'Coppel','Belgrano 3231','1650','3216-6512');
+	 				   insert into comercio values(4163701,'Libreria Rodriguez','Independencia 4647','1653','8431-3218');
+	 				   insert into comercio values(0923934,'Supermercado Dia','De la tradicion 185','1713','2451-9871');
+	 				   insert into comercio values(2105614,'Peluqueria paty','Gral. Lavalle 848','1714','8721-9852');
+	 				   insert into comercio values(4334530,'Santeria la paz','Vidal 1769','1426','8922-3265');
+	 				   insert into comercio values(2054706,'Musimundo','Av. Lope de Vega 1520','1407','2154-3285');
+	 				   insert into comercio values(1287436,'Shell','Sta Rosa 2489','1712','8970-8132');
+	 				   insert into comercio values(9836840,'Casa del Audio','Rivadavia 2198','1714','4015-9872');
+	 				   insert into comercio values(5419987,'KFC','Av. Bartolome Mitre','1744','0454-1134')`)
     if err !=nil {
     	log.Fatal(err)
     }
 }
+
 
 func main(){
 
@@ -360,4 +390,6 @@ func main(){
     definirPksYFks(db)
     cargarClientes(db)
 	cargarComercio(db)
+	cargarTarjetas(db)
+	
 }
