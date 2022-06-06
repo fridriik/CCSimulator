@@ -491,6 +491,66 @@ func cargarComercio(db1 *sql.DB){
     	log.Fatal(err)
     }
 }
+func generarConsumosVirtuales()[] consumo{
+
+	consumos:=[] consumo{
+			consumo{
+			//caso feliz
+				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
+				codseguridad:[4]rune{'8','1','7','2'},
+				nrocomercio:1935485,
+			//175000.00 maximo de la tarjeta
+				monto:174000.00,
+			},
+			consumo{
+			//numero de tarjeta erroneo o anulada
+				nrotarjeta:[16]rune{'6','7','6','7','6','7','6','5','6','4','8','4','4','5','8','8'},
+				codseguridad:[4]rune{'1','1','1','9'},
+				nrocomercio:3466632,
+				monto:15840.00,
+			},
+			consumo{
+			//codigo de seguridad incorrecto
+				nrotarjeta:[16]rune{'1','5','5','4','3','8','8','9','7','6','6','7','5','2','6','5'},
+				codseguridad:[4]rune{'1','8','6','4'},
+				nrocomercio:7860698,
+			//191000.00 monto maximo de la tarjeta
+				monto:100.00,
+			},
+			consumo{
+			// supera limite de tarjeta
+				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
+				codseguridad:[4]rune{'8','1','7','2'},
+				nrocomercio:1935485,
+			//175000.00 maximo de la tarjeta
+				monto:2000.00,
+			},
+			consumo{
+			// supera limite de tarjeta
+				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
+				codseguridad:[4]rune{'8','1','7','2'},
+				nrocomercio:4163701,
+			//175000.00 maximo de la tarjeta
+				monto:24000.00,
+			},
+			consumo{
+			//tarjeta vencida ('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00
+				nrotarjeta:[16]rune{'8','9','8','6','6','6','4','6','7','8','5','8','9','1','0','0'},
+				codseguridad:[4]rune{'8','8','8','8'},
+				nrocomercio:5419987,
+				monto:500.00,
+			},
+			consumo{
+			//tarjeta suspendida
+				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
+				codseguridad:[4]rune{'8','1','7','2'},
+				nrocomercio:9836840,
+				//175000.00 maximo de la tarjeta
+				monto:200.00,
+			},
+		}
+	return consumos
+}
 
 
 func main(){
@@ -510,4 +570,7 @@ func main(){
 	cargarComercio(db)
 	cargarTarjetas(db)
 	cargarCierres(db)
+
+	//consumosVirtuales:=generarConsumosVirtuales()
+
 }
