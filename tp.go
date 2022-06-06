@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
-//	"fmt"
-	_"github.com/lib/pq"
+	"fmt"
 	"log"
+	"os"
+	_"github.com/lib/pq"
+	"github.com/dixonwille/wmenu/v5"
 )
 
 
@@ -101,34 +103,39 @@ type consumo struct {
 func createDatabase() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=postgres sslmode=disable")
-	if err !=nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	_, err =db.Exec(`create database tp`)
+	_, err = db.Exec(`create database tp`)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 		
-func deleteDatabase(){
+func deleteDatabase() {
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=postgres sslmode=disable")
-	if err !=nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	_, err =db.Exec(`drop database if exists tp`)
+	_, err = db.Exec(`drop database if exists tp`)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-func crearTablas(db1 *sql.DB){
 
-	db := db1
-	var err error
+
+func crearTablas() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	
 	_, err = db.Exec(
  `create table cliente(
@@ -200,15 +207,19 @@ func crearTablas(db1 *sql.DB){
     						codseguridad char(4),
     						nrocomercio int,
     						monto decimal(7,2));`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     } 
 }
 
-func definirPksYFks(db1 *sql.DB){
 
-	db := db1
-	var err error
+func definirPksYFks() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	
 	 _, err = db.Exec(`alter table cliente add constraint cliente_pk primary key (nrocliente);
 	 				   alter table tarjeta add constraint tarjeta_pk primary key (nrotarjeta);
@@ -228,16 +239,19 @@ func definirPksYFks(db1 *sql.DB){
 	 				   alter table cabecera add constraint cabecera_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table alerta add constraint alerta_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table alerta add constraint alerta_nrorechazoa_fk foreign key (nrorechazo) references rechazo(nrorechazo);`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
 
 
-func eliminarPksYFks(db1 *sql.DB){
+func eliminarPksYFks() {
 
-	db := db1
-	var err error
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	
 	 _, err = db.Exec(`alter table cliente drop constraint cliente_pk;
 	 				   alter table tarjeta drop constraint tarjeta_pk;
@@ -257,15 +271,19 @@ func eliminarPksYFks(db1 *sql.DB){
 	 				   alter table cabecera drop constraint cabecera_nrotarjeta_fk;
 	 				   alter table alerta drop constraint alerta_nrotarjeta_fk;
 	 				   alter table alerta drop constraint alerta_nrorechazoa_fk`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
 
 
-func cargarClientes(db1 *sql.DB){
-	db := db1
-	var err error
+func cargarClientes() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
 	 _, err = db.Exec(`insert into cliente values(2981775,'Juan','Peron','Sarmiento 362','4331-1775');
 	 				   insert into cliente values(2965465,'Nestor','Kirchner','Suipacha 1422','4327-0228');
@@ -287,15 +305,19 @@ func cargarClientes(db1 *sql.DB){
 	 				   insert into cliente values(2105646,'Patty','Bouvie','Av. España 1701','4370-6105');
 	 				   insert into cliente values(8845660,'Barney','Gumble','Pujol 644','4893-0322');
 	 				   insert into cliente values(8520147,'Waylon','Smithers','Defensa 219','4362-1100')`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
 
 
-func cargarTarjetas(db1 *sql.DB){
-	db := db1
-	var err error
+func cargarTarjetas() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
 	 _, err = db.Exec(`insert into tarjeta values('4455674512546534', 2981775, '201106', '202306', '2020', 100000.00, 'vigente');
 	 				   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
@@ -319,15 +341,18 @@ func cargarTarjetas(db1 *sql.DB){
 	 				   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
 	 				   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
 	 				   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	//tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
 
-func cargarCierres(db1 *sql.DB){
+func cargarCierres() {
 
-	db := db1
-	var err error
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
 	 _, err = db.Exec(`insert into cierre values(2022,01,0,'2022-01-16','2022-01-15','2022-01-21');
 	 				   insert into cierre values(2022,02,0,'2022-02-19','2022-02-18','2022-02-25');
@@ -458,14 +483,18 @@ func cargarCierres(db1 *sql.DB){
 	 				   insert into cierre values(2022,10,9,'2022-10-18','2022-10-17','2022-10-24');
 	 				   insert into cierre values(2022,11,9,'2022-11-19','2022-11-18','2022-11-25');
 	 				   insert into cierre values(2022,12,9,'2022-12-19','2022-12-18','2022-12-25');`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
 
-func cargarComercio(db1 *sql.DB){
-	db := db1
-	var err error
+func cargarComercio() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
 	 _, err = db.Exec(`insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1744','6541-6542');
 	 				   insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1614','6785-1354');
@@ -487,11 +516,11 @@ func cargarComercio(db1 *sql.DB){
 	 				   insert into comercio values(1287436,'Shell','Sta Rosa 2489','1712','8970-8132');
 	 				   insert into comercio values(9836840,'Casa del Audio','Rivadavia 2198','1714','4015-9872');
 	 				   insert into comercio values(5419987,'KFC','Av. Bartolome Mitre','1744','0454-1134')`)
-    if err !=nil {
+    if err != nil {
     	log.Fatal(err)
     }
 }
-func generarConsumosVirtuales()[] consumo{
+func generarConsumosVirtuales()[] consumo {
 
 	consumos:=[] consumo{
 			consumo{
@@ -553,24 +582,81 @@ func generarConsumosVirtuales()[] consumo{
 }
 
 
-func main(){
+func menuPrincipal() *wmenu.Menu {
 
-    deleteDatabase()
-	createDatabase()
+	menu := wmenu.NewMenu("Seleccione una opcion")
+	menu.Action(func (opts []wmenu.Opt) error {fmt.Print(opts[0].Text + "ha sido seleccionada"); return nil})
+	menu.Option("Crear base de datos", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		createDatabase()
+		mv := menuVolver()
+		return mv.Run()
+	})
+	menu.Option("Eliminar base de datos", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		deleteDatabase()
+		mv := menuVolver()
+		return mv.Run()
+	})		
+	menu.Option("Crear tablas", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		crearTablas()
+		mv := menuVolver()
+		return mv.Run()
+	})
+	menu.Option("Agregar PKs y FKs", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		definirPksYFks()
+		mv := menuVolver()
+		return mv.Run()
+	})
+	menu.Option("Eliminar PKs y FKs", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		eliminarPksYFks()
+		mv := menuVolver()
+		return mv.Run()
+	})
+	menu.Option("Rellenar con valores tablas esenciales", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")
+		cargarClientes()
+		cargarComercio()
+		cargarTarjetas()
+		cargarCierres()
+		mv := menuVolver()
+		return mv.Run() 
+	})
+	menu.Option("Salir", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")	
+		os.Exit(0)
+		return nil
+	})
+	return menu
+}
 
-	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
-	if err !=nil {
+
+func menuVolver() *wmenu.Menu {
+	menu := wmenu.NewMenu("")
+	menu.Action(func (opts []wmenu.Opt) error {fmt.Print(opts[0].Text + "ha sido seleccionada"); return nil})
+	menu.Option("Volver al menu principal", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")	
+		mp := menuPrincipal()
+		return mp.Run()
+	})
+	menu.Option("Salir para verificar en PostgreSQL", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")	
+		os.Exit(0)
+		return nil
+	})
+	return menu
+}
+
+
+func main() {
+	m := menuPrincipal()
+	err := m.Run()
+	if err != nil {
 		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	defer db.Close()
-
-	crearTablas(db)
-    definirPksYFks(db)
-    cargarClientes(db)
-	cargarComercio(db)
-	cargarTarjetas(db)
-	cargarCierres(db)
-
-	//consumosVirtuales:=generarConsumosVirtuales()
-
 }
