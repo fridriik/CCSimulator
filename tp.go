@@ -253,7 +253,16 @@ func eliminarPksYFks() {
 	}
 	defer db.Close()
 	
-	 _, err = db.Exec(`alter table cliente drop constraint cliente_pk;
+	 _, err = db.Exec(`alter table tarjeta drop constraint tarjeta_nrocliente_fk;
+	 	 			   alter table compra drop constraint compra_nrotarjeta_fk;
+	 	 			   alter table compra drop constraint compra_nrocomerio_fk;
+	 	 			   alter table rechazo drop constraint rechazo_nrotarjeta_fk;
+	 	 			   alter table rechazo drop constraint rechazo_nrocomerio_fk;
+	 	 			   alter table cabecera drop constraint cabecera_nrotarjeta_fk;
+	 	 			   alter table alerta drop constraint alerta_nrotarjeta_fk;
+	 	 			   alter table alerta drop constraint alerta_nrorechazoa_fk;
+
+	 	 			   alter table cliente drop constraint cliente_pk;
 	 				   alter table tarjeta drop constraint tarjeta_pk;
 	 				   alter table comercio drop constraint comercio_pk;
 	 				   alter table compra drop constraint compra_pk;
@@ -261,16 +270,7 @@ func eliminarPksYFks() {
 	 				   alter table cierre drop constraint cierre_pk;
 	 				   alter table cabecera drop constraint cabecera_pk;
 	 				   alter table detalle drop constraint detalle_pk;
-	 				   alter table alerta drop constraint alerta_pk;
-
-	 				   alter table tarjeta drop constraint tarjeta_nrocliente_fk;
-	 				   alter table compra drop constraint compra_nrotarjeta_fk;
-	 				   alter table compra drop constraint compra_nrocomerio_fk;
-	 				   alter table rechazo drop constraint rechazo_nrotarjeta_fk;
-	 				   alter table rechazo drop constraint rechazo_nrocomerio_fk;
-	 				   alter table cabecera drop constraint cabecera_nrotarjeta_fk;
-	 				   alter table alerta drop constraint alerta_nrotarjeta_fk;
-	 				   alter table alerta drop constraint alerta_nrorechazoa_fk`)
+	 				   alter table alerta drop constraint alerta_pk`)
     if err != nil {
     	log.Fatal(err)
     }
@@ -320,27 +320,27 @@ func cargarTarjetas() {
 	defer db.Close()
 
 	 _, err = db.Exec(`insert into tarjeta values('4455674512546534', 2981775, '201106', '202306', '2020', 100000.00, 'vigente');
-	 				   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
-	 				   insert into tarjeta values('9438541511146093', 8979845, '201207', '202411', '8807', 110000.00, 'vigente');
-	 				   insert into tarjeta values('2988781555176533', 2313575, '201609', '202910', '1331', 140000.00, 'vigente');
-	 				   insert into tarjeta values('5610556817653930', 6267429, '201301', '202703', '6854', 120000.00, 'vigente');
-	 				   insert into tarjeta values('2783277803985152', 5618468, '201402', '202504', '8902', 130000.00, 'vigente');
-	 				   insert into tarjeta values('4905123783542322', 1568484, '201112', '202401', '6723', 105000.00, 'vigente');
-	 				   insert into tarjeta values('7125367183482819', 1568432, '201202', '202903', '0913', 155000.00, 'vigente');
-	 				   insert into tarjeta values('8172631238129381', 6549832, '201305', '202408', '6512', 115000.00, 'vigente');
-	 				   insert into tarjeta values('9182743719349715', 8785512, '201410', '202606', '0782', 165000.00, 'vigente');
-	 				   insert into tarjeta values('4812346279123678', 7878798, '201303', '202411', '9991', 125000.00, 'vigente');
-	 				   insert into tarjeta values('9823478185734782', 2135484, '201703', '203010', '8172', 175000.00, 'vigente');
-	 				   insert into tarjeta values('6767676712371263', 0211541, '202009', '203512', '1119', 160000.00, 'vigente');
-	 				   insert into tarjeta values('9009723487324881', 5421054, '201801', '203308', '7667', 101000.00, 'vigente');
-	 				   insert into tarjeta values('1554388976675265', 2161054, '201004', '202301', '1865', 191000.00, 'vigente');
-	 				   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
-	 				   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
-	 				   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
-	 				   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
-	 				   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
-	 				   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
-	 				   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	//tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
+    		 				   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
+    		 				   insert into tarjeta values('9438541511146093', 8979845, '201207', '202411', '8807', 110000.00, 'vigente');
+    		 				   insert into tarjeta values('2988781555176533', 2313575, '201609', '202910', '1331', 140000.00, 'vigente');
+    		 				   insert into tarjeta values('5610556817653930', 6267429, '201301', '202703', '6854', 120000.00, 'vigente');
+    		 				   insert into tarjeta values('2783277803985152', 5618468, '201402', '202504', '8902', 130000.00, 'vigente');
+    		 				   insert into tarjeta values('4905123783542322', 1568484, '201112', '202401', '6723', 105000.00, 'vigente');
+    		 				   insert into tarjeta values('7125367183482819', 1568432, '201202', '202903', '0913', 155000.00, 'vigente');
+    		 				   insert into tarjeta values('8172631238129381', 6549832, '201305', '202408', '6512', 115000.00, 'vigente');
+    		 				   insert into tarjeta values('9182743719349715', 8785512, '201410', '202606', '0782', 165000.00, 'vigente');
+    		 				   insert into tarjeta values('4812346279123678', 7878798, '201303', '202411', '9991', 125000.00, 'vigente');
+    		 				   insert into tarjeta values('9823478185734782', 2135484, '201703', '203010', '8172', 175000.00, 'vigente');
+    		 				   insert into tarjeta values('6767676712371263', 0211541, '202009', '203512', '1119', 160000.00, 'vigente');
+    		 				   insert into tarjeta values('9009723487324881', 5421054, '201801', '203308', '7667', 101000.00, 'vigente');
+    		 				   insert into tarjeta values('1554388976675265', 2161054, '201004', '202301', '1865', 191000.00, 'vigente');
+    		 				   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
+    		 				   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
+    		 				   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
+    		 				   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
+    		 				   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
+    		 				   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
+    		 				   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	//tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
     if err != nil {
     	log.Fatal(err)
     }
@@ -520,65 +520,29 @@ func cargarComercio() {
     	log.Fatal(err)
     }
 }
-func generarConsumosVirtuales()[] consumo {
 
-	consumos:=[] consumo{
-			consumo{
-			//caso feliz
-				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
-				codseguridad:[4]rune{'8','1','7','2'},
-				nrocomercio:1935485,
-			//175000.00 maximo de la tarjeta
-				monto:174000.00,
-			},
-			consumo{
-			//numero de tarjeta erroneo o anulada
-				nrotarjeta:[16]rune{'6','7','6','7','6','7','6','5','6','4','8','4','4','5','8','8'},
-				codseguridad:[4]rune{'1','1','1','9'},
-				nrocomercio:3466632,
-				monto:15840.00,
-			},
-			consumo{
-			//codigo de seguridad incorrecto
-				nrotarjeta:[16]rune{'1','5','5','4','3','8','8','9','7','6','6','7','5','2','6','5'},
-				codseguridad:[4]rune{'1','8','6','4'},
-				nrocomercio:7860698,
-			//191000.00 monto maximo de la tarjeta
-				monto:100.00,
-			},
-			consumo{
-			// supera limite de tarjeta
-				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
-				codseguridad:[4]rune{'8','1','7','2'},
-				nrocomercio:1935485,
-			//175000.00 maximo de la tarjeta
-				monto:2000.00,
-			},
-			consumo{
-			// supera limite de tarjeta
-				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
-				codseguridad:[4]rune{'8','1','7','2'},
-				nrocomercio:4163701,
-			//175000.00 maximo de la tarjeta
-				monto:24000.00,
-			},
-			consumo{
-			//tarjeta vencida ('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00
-				nrotarjeta:[16]rune{'8','9','8','6','6','6','4','6','7','8','5','8','9','1','0','0'},
-				codseguridad:[4]rune{'8','8','8','8'},
-				nrocomercio:5419987,
-				monto:500.00,
-			},
-			consumo{
-			//tarjeta suspendida
-				nrotarjeta:[16]rune{'9','8','2','3','4','7','8','1','8','5','7','3','4','7','8','2'},
-				codseguridad:[4]rune{'8','1','7','2'},
-				nrocomercio:9836840,
-				//175000.00 maximo de la tarjeta
-				monto:200.00,
-			},
-		}
-	return consumos
+
+func cargarConsumos() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`insert into consumo values('4455674512546534','2020',1935485,11320.00);
+					  insert into consumo values('4455674512546534','2020',9836840,15840.50);	 
+					  insert into consumo values('1435471512346032','1212',1935485,8900.5); 
+					  insert into consumo values('1435471512346032','1212',3455465,5750.00);
+					  insert into consumo values('1435471512346032','1213',3455465,100.00);
+					  insert into consumo values('7777612376765651','1942',3455465,2005.00); 
+					  insert into consumo values('8986664678589100','8888',3455465,24015.63);
+					  insert into consumo values('4455674512546534','2020',1935485,99999.98);
+					  insert into consumo values('4455674512546534','2020',3455465,99999.99);
+					  insert into consumo values('1234567898765432','7069',3455465,1111.10);`)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 
@@ -622,6 +586,7 @@ func menuPrincipal() *wmenu.Menu {
 		cargarComercio()
 		cargarTarjetas()
 		cargarCierres()
+		cargarConsumos()
 		mv := menuVolver()
 		return mv.Run() 
 	})
