@@ -617,6 +617,45 @@ func autorizarCompra() {
 		log.Fatal(err)
 	}
 }
+func probarConsumos() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	
+	_, err = db.Query(`create or replace function probarconsumo() returns void as $$
+			declare
+					v record;
+					a record;
+			begin
+					for v in select * from consumo loop
+						select autorizarCompra(v.nrotarjeta,v.codseguridad,v.nrocomercio,v.monto) into a;
+					end loop;
+			end;
+			$$ language plpgsql;`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func llamarConsumos() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`select probarconsumo();`)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 
 func menuPrincipal() *wmenu.Menu {
 
