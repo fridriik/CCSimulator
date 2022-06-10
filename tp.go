@@ -138,80 +138,99 @@ func crearTablas() {
 	}
 	defer db.Close()
 	
-	_, err = db.Exec(
- `create sequence aumentoCompra;
-  create sequence aumentoRechazo;
-  create table cliente(
-							nrocliente int,
-							nombre text,
-    						apellido text,
-    						domicilio text,
-    						telefono char(12));
-  create table tarjeta(
-   							nrotarjeta char(16),
-							nrocliente int,
-							validadesde char(6), 
-							validahasta char(6),
-							codseguridad char(4),
-							limitecompra decimal(8,2),
-							estado char(10));
-  create table comercio(
-   							nrocomercio int,
-   							nombre text,
-    						domicilio text,
-    						codigopostal char(8),
-    						telefono char(12));
-  create table compra(
-  							nrooperacion int not null default nextval('aumentoCompra'),
-    						nrotarjeta char(16),
-    						nrocomercio int,
-    						fecha timestamp,
-    						monto decimal(7,2),
-    						pagado boolean);
-  create table rechazo(
-  							nrorechazo int not null default nextval('aumentoRechazo'),
-    						nrotarjeta char(16),
-    						nrocomercio int,
-    						fecha timestamp,
-    						monto decimal(7,2),
-    						motivo text);
-  create table cierre(
-  							año int,
-    						mes int,
-    						terminacion int,
-    						fechainicio date,
-    						fechacierre date,
-							fechavto date);
-  create table cabecera(
-  							nroresumen int,
-    						nombre text,
-    						apellido text,
-    						domicilio text,
-    						nrotarjeta char(16),
-    						desde date,
-    						hasta date,
-    						vence date,
-    						total decimal(8,2));   
-  create table detalle(
- 							nroresumen int,
-    						nrolinea int,
-    						fecha date,
-    						nombrecomercio text,
-    						monto decimal(7,2));     
-  create table alerta(
-  							nroalerta int,
-    						nrotarjeta char(16),
-    						fecha timestamp,
-    						nrorechazo int,
-    						codalerta int,
-    						descripcion text);
-  create table consumo(
-   							nrotarjeta char(16),
-    						codseguridad char(4),
-    						nrocomercio int,
-    						monto decimal(7,2));
-  alter sequence aumentoCompra increment 1 start 1 cache 1 owned by compra.nrooperacion;
-  alter sequence aumentoRechazo increment 1 start 1 cache 1 owned by rechazo.nrorechazo;`)
+	_, err = db.Exec(`create sequence aumentoCompra;
+	
+  					  create sequence aumentoRechazo;
+  					  
+  					  create sequence aumentoAlerta;
+
+  					  create table cliente(nrocliente int,
+										   nombre text,
+										   apellido text,
+										   domicilio text,
+										   telefono char(12));
+
+					  create table tarjeta(nrotarjeta char(16),
+					  					   nrocliente int,
+					  					   validadesde char(6),
+					  					   validahasta char(6),
+					  					   codseguridad char(4),
+					  					   limitecompra decimal(8,2),
+					  					   estado char(10));
+
+					  create table comercio(nrocomercio int,
+					  						nombre text,
+					  						domicilio text,
+					  						codigopostal char(8),
+					  						telefono char(12));
+
+					  create table compra(nrooperacion int not null default nextval('aumentoCompra'),
+					  					  nrotarjeta char(16),
+					  					  nrocomercio int,
+					  					  fecha timestamp,
+					  					  monto decimal(7,2),
+					  					  pagado boolean);
+
+					  create table rechazo(nrorechazo int not null default nextval('aumentoRechazo'),
+					  					   nrotarjeta char(16),
+					  					   nrocomercio int,
+					  					   fecha timestamp,
+					  					   monto decimal(7,2),
+					  					   motivo text);
+
+					  create table cierre(año int,
+					  					  mes int,
+					  					  terminacion int,
+					  					  fechainicio date,
+					  					  fechacierre date,
+					  					  fechavto date);
+
+					  create table cabecera(nroresumen int,
+					  						nombre text,
+					  						apellido text,
+					  						domicilio text,
+					  						nrotarjeta char(16),
+					  						desde date,
+					  						hasta date,
+					  						vence date,
+					  						total decimal(8,2));   
+
+					  create table detalle(nroresumen int,
+					  					   nrolinea int,
+					  					   fecha date,
+					  					   nombrecomercio text,
+					  					   monto decimal(7,2));     
+
+					  create table alerta(nroalerta int not null default nextval('aumentoAlerta'),
+					  					  nrotarjeta char(16),
+					  					  fecha timestamp,
+					  					  nrorechazo int,
+					  					  codalerta int,
+					  					  descripcion text);
+
+					  create table consumo(nrotarjeta char(16),
+					  					   codseguridad char(4),
+					  					   nrocomercio int,
+					  					   monto decimal(7,2));
+
+					  alter sequence aumentoCompra 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by compra.nrooperacion;
+					  		
+					  alter sequence aumentoRechazo 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by rechazo.nrorechazo;
+					  		
+					  alter sequence aumentoAlerta 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by alerta.nroalerta;`)
+
     if err != nil {
     	log.Fatal(err)
     } 
@@ -245,6 +264,7 @@ func definirPksYFks() {
 	 				   alter table cabecera add constraint cabecera_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table alerta add constraint alerta_nrotarjeta_fk foreign key (nrotarjeta) references tarjeta(nrotarjeta);
 	 				   alter table alerta add constraint alerta_nrorechazoa_fk foreign key (nrorechazo) references rechazo(nrorechazo);`)
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -277,6 +297,7 @@ func eliminarPksYFks() {
 	 				   alter table cabecera drop constraint cabecera_pk;
 	 				   alter table detalle drop constraint detalle_pk;
 	 				   alter table alerta drop constraint alerta_pk`)
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -311,6 +332,7 @@ func cargarClientes() {
 	 				   insert into cliente values(2105646,'Patty','Bouvie','Av. España 1701','4370-6105');
 	 				   insert into cliente values(8845660,'Barney','Gumble','Pujol 644','4893-0322');
 	 				   insert into cliente values(8520147,'Waylon','Smithers','Defensa 219','4362-1100')`)
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -326,27 +348,29 @@ func cargarTarjetas() {
 	defer db.Close()
 
 	 _, err = db.Exec(`insert into tarjeta values('4455674512546534', 2981775, '201106', '202306', '2020', 100000.00, 'vigente');
-    		 				   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
-    		 				   insert into tarjeta values('9438541511146093', 8979845, '201207', '202411', '8807', 110000.00, 'vigente');
-    		 				   insert into tarjeta values('2988781555176533', 2313575, '201609', '202910', '1331', 140000.00, 'vigente');
-    		 				   insert into tarjeta values('5610556817653930', 6267429, '201301', '202703', '6854', 120000.00, 'vigente');
-    		 				   insert into tarjeta values('2783277803985152', 5618468, '201402', '202504', '8902', 130000.00, 'vigente');
-    		 				   insert into tarjeta values('4905123783542322', 1568484, '201112', '202401', '6723', 105000.00, 'vigente');
-    		 				   insert into tarjeta values('7125367183482819', 1568432, '201202', '202903', '0913', 155000.00, 'vigente');
-    		 				   insert into tarjeta values('8172631238129381', 6549832, '201305', '202408', '6512', 115000.00, 'vigente');
-    		 				   insert into tarjeta values('9182743719349715', 8785512, '201410', '202606', '0782', 165000.00, 'vigente');
-    		 				   insert into tarjeta values('4812346279123678', 7878798, '201303', '202411', '9991', 125000.00, 'vigente');
-    		 				   insert into tarjeta values('9823478185734782', 2135484, '201703', '203010', '8172', 175000.00, 'vigente');
-    		 				   insert into tarjeta values('6767676712371263', 0211541, '202009', '203512', '1119', 160000.00, 'vigente');
-    		 				   insert into tarjeta values('9009723487324881', 5421054, '201801', '203308', '7667', 101000.00, 'vigente');
-    		 				   insert into tarjeta values('1554388976675265', 2161054, '201004', '202301', '1865', 191000.00, 'vigente');
-    		 				   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
-    		 				   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
-    		 				   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
-    		 				   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
-    		 				   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
-    		 				   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
-    		 				   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	//tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
+    		 		   insert into tarjeta values('1435471512346032', 2965465, '201510', '202812', '1212', 150000.00, 'vigente');
+    		 		   insert into tarjeta values('9438541511146093', 8979845, '201207', '202411', '8807', 110000.00, 'vigente');
+    		 		   insert into tarjeta values('2988781555176533', 2313575, '201609', '202910', '1331', 140000.00, 'vigente');
+    		 		   insert into tarjeta values('5610556817653930', 6267429, '201301', '202703', '6854', 120000.00, 'vigente');
+    		 		   insert into tarjeta values('2783277803985152', 5618468, '201402', '202504', '8902', 130000.00, 'vigente');
+    		 		   insert into tarjeta values('4905123783542322', 1568484, '201112', '202401', '6723', 105000.00, 'vigente');
+    		 		   insert into tarjeta values('7125367183482819', 1568432, '201202', '202903', '0913', 155000.00, 'vigente');
+    		 		   insert into tarjeta values('8172631238129381', 6549832, '201305', '202408', '6512', 115000.00, 'vigente');
+    		 		   insert into tarjeta values('9182743719349715', 8785512, '201410', '202606', '0782', 165000.00, 'vigente');
+    		 		   insert into tarjeta values('4812346279123678', 7878798, '201303', '202411', '9991', 125000.00, 'vigente');
+    		 		   insert into tarjeta values('9823478185734782', 2135484, '201703', '203010', '8172', 175000.00, 'vigente');
+    		 		   insert into tarjeta values('6767676712371263', 0211541, '202009', '203512', '1119', 160000.00, 'vigente');
+    		 		   insert into tarjeta values('9009723487324881', 5421054, '201801', '203308', '7667', 101000.00, 'vigente');
+    		 		   insert into tarjeta values('1554388976675265', 2161054, '201004', '202301', '1865', 191000.00, 'vigente');
+    		 		   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
+    		 		   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
+    		 		   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
+    		 		   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
+    		 		   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
+    		 		   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
+    		 		   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	
+    		 		   //tarjeta vencida: 8986664678589100 de cliente 8845660 Barney
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -490,6 +514,7 @@ func cargarCierres() {
 	 				   insert into cierre values(2022,10,9,'2022-10-18','2022-10-17','2022-10-24');
 	 				   insert into cierre values(2022,11,9,'2022-11-19','2022-11-18','2022-11-25');
 	 				   insert into cierre values(2022,12,9,'2022-12-19','2022-12-18','2022-12-25');`)
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -524,6 +549,7 @@ func cargarComercio() {
 	 				   insert into comercio values(1287436,'Shell','Sta Rosa 2489','1712','8970-8132');
 	 				   insert into comercio values(9836840,'Casa del Audio','Rivadavia 2198','1714','4015-9872');
 	 				   insert into comercio values(5419987,'KFC','Av. Bartolome Mitre','1744','0454-1134')`)
+
     if err != nil {
     	log.Fatal(err)
     }
@@ -548,6 +574,7 @@ func cargarConsumos() {
 					  insert into consumo values('4455674512546534','2020',1935485,99999.98);
 					  insert into consumo values('4455674512546534','2020',3455465,99999.99);
 					  insert into consumo values('1234567898765432','7069',3455465,1111.10);`)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -563,51 +590,51 @@ func autorizarCompra() {
 	defer db.Close()
 	
 	_, err = db.Query(`create or replace function autorizarCompra(nrotarjetaAux char(16), codseguridadAux char(4), nrocomercioAux int, montoAux decimal(7, 2)) returns boolean as $$
-			declare
-				resultado record;
-				parcial decimal(7, 2);
-				total decimal(8, 2);
-				v decimal(7,2);
-			begin
-				perform * from tarjeta where nrotarjeta = nrotarjetaAux;
-				if not found then
-					insert into rechazo values(nextval('aumentoRechazo'),null,nrocomercioAux,current_timestamp,montoAux,'tarjeta inexistente');
-					return false;
-				else
-					select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and codseguridad = codseguridadAux;
-					if not found then
-						insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'codigo de seguridad incorrecto');
-						return false;
-					else
-						total := 0;
-						for v in select monto from compra where compra.nrotarjeta = nrotarjetaAux and compra.pagado = true loop
-							total := total + v;
-						end loop;
-						total := total + montoAux;
-						select * into resultado from tarjeta t where t.nrotarjeta = nrotarjetaAux and t.limitecompra > total;
-						if not found then
-							insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'supera limite tarjeta');
-							return false;
-						else
-							select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
-							if not found then
-								insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'plazo de vigencia expirado');
-								return false;
-							else
-								select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and estado = 'vigente';
+					   declare
+					   		resultado record;
+					   		parcial decimal(7, 2);
+					   		total decimal(8, 2);
+					   begin
+					   		perform * from tarjeta where nrotarjeta = nrotarjetaAux;
+					   		if not found then
+					   			insert into rechazo values(nextval('aumentoRechazo'),null,nrocomercioAux,current_timestamp,montoAux,'tarjeta inexistente');
+					   			return false;
+					   		else
+								select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and codseguridad = codseguridadAux;
 								if not found then
-									insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'la tarjeta se encuentra suspendida');
+									insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'codigo de seguridad incorrecto');
 									return false;
 								else
-									insert into compra values(nextval('aumentoCompra'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,true);
-									return true;
-								end if;		
+									total := 0;
+									for parcial in select monto from compra where compra.nrotarjeta = nrotarjetaAux and compra.pagado = true loop
+										total := total + parcial;
+									end loop;
+									total := total + montoAux;
+									select * into resultado from tarjeta t where t.nrotarjeta = nrotarjetaAux and t.limitecompra > total;
+									if not found then
+										insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'supera limite tarjeta');
+										return false;
+									else
+										select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
+										if not found then
+											insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'plazo de vigencia expirado');
+											return false;
+										else
+											select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and estado = 'vigente';
+											if not found then
+												insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'la tarjeta se encuentra suspendida');
+												return false;
+											else
+												insert into compra values(nextval('aumentoCompra'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,true);
+												return true;
+											end if;		
+										end if;	
+									end if;
+								end if;
 							end if;	
-						end if;
-					end if;
-				end if;	
-			end;
-			$$ language plpgsql;;`)
+						end;
+						$$ language plpgsql;;`)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -622,17 +649,17 @@ func probarConsumos() {
 	}
 	defer db.Close()
 	
-	_, err = db.Query(`create or replace function probarconsumo() returns void as $$
-			declare
-					v record;
-					a record;
-			begin
-					for v in select * from consumo loop
-						select autorizarCompra(v.nrotarjeta,v.codseguridad,v.nrocomercio,v.monto) into a;
-					end loop;
-			end;
-			$$ language plpgsql;`)
-
+	_, err = db.Query(`create or replace function probarConsumos() returns void as $$
+					   declare
+					   		v record;
+					   		resultado record;
+					   begin
+					   		for v in select * from consumo loop
+								select autorizarCompra(v.nrotarjeta,v.codseguridad,v.nrocomercio,v.monto) into resultado;
+							end loop;
+					   end;
+					   $$ language plpgsql;`)
+			
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -646,8 +673,31 @@ func llamarConsumos() {
 	}
 	defer db.Close()
 
-	_, err = db.Query(`select probarconsumo();`)
+	_, err = db.Query(`select probarConsumos();`)
 	
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func ingresoRechazoAlerta() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`create or replace function ingresoRechazoAlerta() returns trigger as $$
+					   begin
+					   		insert into alerta(nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion) 
+					   					values(nextval('aumentoAlerta'),new.nrotarjeta, new.fecha,new.nrorechazo,0,'Se produjo un nuevo rechazo');
+					   		return new;
+					   end;
+					   $$ language plpgsql;
+
+					   create trigger ingresoRechazoAlerta_trg after insert on rechazo for each row execute procedure ingresoRechazoAlerta();`)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -688,7 +738,7 @@ func menuPrincipal() *wmenu.Menu {
 		mv := menuVolver()
 		return mv.Run()
 	})
-	menu.Option("Rellenar con valores tablas esenciales", nil, false, func(opt wmenu.Opt) error {
+	menu.Option("Rellenar tablas", nil, false, func(opt wmenu.Opt) error {
 		fmt.Println("")
 		cargarClientes()
 		cargarComercio()
@@ -699,7 +749,8 @@ func menuPrincipal() *wmenu.Menu {
 		return mv.Run() 
 	})
 	menu.Option("Cargar funciones", nil, false, func(opt wmenu.Opt) error {
-		fmt.Println("")	
+		fmt.Println("")
+		ingresoRechazoAlerta()	
 		autorizarCompra()
 		probarConsumos()
 		llamarConsumos()
