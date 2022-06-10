@@ -551,6 +551,72 @@ func cargarConsumos() {
 	}
 }
 
+func autorizarCompra() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	
+	_, err = db.Query(`create or replace function autorizarCompra(numeroTarjeta char(16), codSeg char(4), numComercio int, mmonto decimal(7, 2)) returns boolean as $$
+	declare
+		resultado record;
+		parcial decimal(7, 2);
+		total decimal(8, 2);
+		v decimal(7,2);
+	begin
+		perform * from tarjeta where nrotarjeta = numeroTarjeta;
+		if not found then
+			insert into rechazo values(nextval('aumentoRechazo'),null,numComercio,now(),mmonto,'tarjeta inexistente');
+		    return false;
+		else
+		
+			select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and codseguridad = codSeg;
+			if not found then
+			   insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'codigo de seguridad incorrecto');
+			   return false;
+			else
+			
+				total := 0;
+				for v in select monto from compra where compra.nrotarjeta = numeroTarjeta and compra.pagado = true  loop
+					total := total + v ;
+				end loop;
+				total := total + mmonto;
+				select * into resultado from tarjeta t where 
+				t.nrotarjeta = numeroTarjeta and t.limitecompra > total;
+				if not found then
+					insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'supera limite tarjeta');
+					return false;
+				else
+				
+					select * into resultado from tarjeta where nrotarjeta = numeroTarjeta
+					and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
+					if not found then
+						insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'plazo de vigencia expirado');
+						return false;
+					else
+					
+						select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and estado = 'vigente';
+						if not found then
+							insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'la tarjeta se encuentra suspendida');
+							return false;
+						else
+						
+							insert into compra values(nextval('aumentoCompra'),numeroTarjeta,numComercio,now (),mmonto,true);
+							return true;
+						end if;		
+					end if;	
+				end if;
+			end if;
+		end if;	
+	end;
+	$$ language plpgsql;;`)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func menuPrincipal() *wmenu.Menu {
 
