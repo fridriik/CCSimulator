@@ -562,55 +562,52 @@ func autorizarCompra() {
 	}
 	defer db.Close()
 	
-	_, err = db.Query(`create or replace function autorizarCompra(numeroTarjeta char(16), codSeg char(4), numComercio int, mmonto decimal(7, 2)) returns boolean as $$
-	declare
-		resultado record;
-		parcial decimal(7, 2);
-		total decimal(8, 2);
-		v decimal(7,2);
-	begin
-		perform * from tarjeta where nrotarjeta = numeroTarjeta;
-		if not found then
-			insert into rechazo values(nextval('aumentoRechazo'),null,numComercio,now(),mmonto,'tarjeta inexistente');
-		    return false;
-		else
-			select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and codseguridad = codSeg;
-			if not found then
-			   insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'codigo de seguridad incorrecto');
-			   return false;
-			else
-				total := 0;
-				for v in select monto from compra where compra.nrotarjeta = numeroTarjeta and compra.pagado = true  loop
-					total := total + v ;
-				end loop;
-				total := total + mmonto;
-				select * into resultado from tarjeta t where 
-				t.nrotarjeta = numeroTarjeta and t.limitecompra > total;
+	_, err = db.Query(`create or replace function autorizarCompra(nrotarjetaAux char(16), codseguridadAux char(4), nrocomercioAux int, montoAux decimal(7, 2)) returns boolean as $$
+			declare
+				resultado record;
+				parcial decimal(7, 2);
+				total decimal(8, 2);
+				v decimal(7,2);
+			begin
+				perform * from tarjeta where nrotarjeta = nrotarjetaAux;
 				if not found then
-					insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'supera limite tarjeta');
+					insert into rechazo values(nextval('aumentoRechazo'),null,nrocomercioAux,current_timestamp,montoAux,'tarjeta inexistente');
 					return false;
 				else
-					select * into resultado from tarjeta where nrotarjeta = numeroTarjeta
-					and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
+					select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and codseguridad = codseguridadAux;
 					if not found then
-						insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'plazo de vigencia expirado');
+						insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'codigo de seguridad incorrecto');
 						return false;
 					else
-						select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and estado = 'vigente';
+						total := 0;
+						for v in select monto from compra where compra.nrotarjeta = nrotarjetaAux and compra.pagado = true loop
+							total := total + v;
+						end loop;
+						total := total + montoAux;
+						select * into resultado from tarjeta t where t.nrotarjeta = nrotarjetaAux and t.limitecompra > total;
 						if not found then
-							insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'la tarjeta se encuentra suspendida');
+							insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'supera limite tarjeta');
 							return false;
 						else
-							insert into compra values(nextval('aumentoCompra'),numeroTarjeta,numComercio,now (),mmonto,true);
-							return true;
-						end if;		
-					end if;	
-				end if;
-			end if;
-		end if;	
-	end;
-	$$ language plpgsql;;`)
-	
+							select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
+							if not found then
+								insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'plazo de vigencia expirado');
+								return false;
+							else
+								select * into resultado from tarjeta where nrotarjeta = nrotarjetaAux and estado = 'vigente';
+								if not found then
+									insert into rechazo values(nextval('aumentoRechazo'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,'la tarjeta se encuentra suspendida');
+									return false;
+								else
+									insert into compra values(nextval('aumentoCompra'),nrotarjetaAux,nrocomercioAux,current_timestamp,montoAux,true);
+									return true;
+								end if;		
+							end if;	
+						end if;
+					end if;
+				end if;	
+			end;
+			$$ language plpgsql;;`)
 	if err != nil {
 		log.Fatal(err)
 	}
