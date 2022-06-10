@@ -352,6 +352,7 @@ func cargarTarjetas() {
     }
 }
 
+
 func cargarCierres() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -494,6 +495,7 @@ func cargarCierres() {
     }
 }
 
+
 func cargarComercio() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -551,6 +553,7 @@ func cargarConsumos() {
 	}
 }
 
+
 func autorizarCompra() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -571,13 +574,11 @@ func autorizarCompra() {
 			insert into rechazo values(nextval('aumentoRechazo'),null,numComercio,now(),mmonto,'tarjeta inexistente');
 		    return false;
 		else
-		
 			select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and codseguridad = codSeg;
 			if not found then
 			   insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'codigo de seguridad incorrecto');
 			   return false;
 			else
-			
 				total := 0;
 				for v in select monto from compra where compra.nrotarjeta = numeroTarjeta and compra.pagado = true  loop
 					total := total + v ;
@@ -589,20 +590,17 @@ func autorizarCompra() {
 					insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'supera limite tarjeta');
 					return false;
 				else
-				
 					select * into resultado from tarjeta where nrotarjeta = numeroTarjeta
 					and to_date(validahasta, 'YYYYMM') >= to_date('202201', 'YYYYMM');
 					if not found then
 						insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'plazo de vigencia expirado');
 						return false;
 					else
-					
 						select * into resultado from tarjeta where nrotarjeta = numeroTarjeta and estado = 'vigente';
 						if not found then
 							insert into rechazo values(nextval('aumentoRechazo'),numeroTarjeta,numComercio,now(),mmonto,'la tarjeta se encuentra suspendida');
 							return false;
 						else
-						
 							insert into compra values(nextval('aumentoCompra'),numeroTarjeta,numComercio,now (),mmonto,true);
 							return true;
 						end if;		
@@ -617,6 +615,8 @@ func autorizarCompra() {
 		log.Fatal(err)
 	}
 }
+
+
 func probarConsumos() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -700,6 +700,14 @@ func menuPrincipal() *wmenu.Menu {
 		cargarConsumos()
 		mv := menuVolver()
 		return mv.Run() 
+	})
+	menu.Option("Cargar funciones", nil, false, func(opt wmenu.Opt) error {
+		fmt.Println("")	
+		autorizarCompra()
+		probarConsumos()
+		llamarConsumos()
+		mv := menuVolver()
+		return mv.Run()
 	})
 	menu.Option("Salir", nil, false, func(opt wmenu.Opt) error {
 		fmt.Println("")	
