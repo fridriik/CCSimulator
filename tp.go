@@ -129,6 +129,7 @@ func deleteDatabase() {
 }
 
 
+
 func crearTablas() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -138,7 +139,9 @@ func crearTablas() {
 	defer db.Close()
 	
 	_, err = db.Exec(
- `create table cliente(
+ `create sequence aumentoCompra;
+  create sequence aumentoRechazo;
+  create table cliente(
 							nrocliente int,
 							nombre text,
     						apellido text,
@@ -159,14 +162,14 @@ func crearTablas() {
     						codigopostal char(8),
     						telefono char(12));
   create table compra(
-  							nrooperacion int,
+  							nrooperacion int not null default nextval('aumentoCompra'),
     						nrotarjeta char(16),
     						nrocomercio int,
     						fecha timestamp,
     						monto decimal(7,2),
     						pagado boolean);
   create table rechazo(
-  							nrorechazo int,
+  							nrorechazo int not null default nextval('aumentoRechazo'),
     						nrotarjeta char(16),
     						nrocomercio int,
     						fecha timestamp,
@@ -206,11 +209,14 @@ func crearTablas() {
    							nrotarjeta char(16),
     						codseguridad char(4),
     						nrocomercio int,
-    						monto decimal(7,2));`)
+    						monto decimal(7,2));
+  alter sequence aumentoCompra increment 1 start 1 cache 1 owned by compra.nrooperacion;
+  alter sequence aumentoRechazo increment 1 start 1 cache 1 owned by rechazo.nrorechazo;`)
     if err != nil {
     	log.Fatal(err)
     } 
 }
+	
 
 
 func definirPksYFks() {
