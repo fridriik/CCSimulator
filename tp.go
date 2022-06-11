@@ -141,6 +141,8 @@ func crearTablas() {
 	_, err = db.Exec(`create sequence aumentoCompra;
 	
   					  create sequence aumentoRechazo;
+
+  					  create sequence aumentoCabecera;
   					  
   					  create sequence aumentoAlerta;
 
@@ -185,7 +187,7 @@ func crearTablas() {
 					  					  fechacierre date,
 					  					  fechavto date);
 
-					  create table cabecera(nroresumen int,
+					  create table cabecera(nroresumen int not null default nextval('aumentoCabecera'),
 					  						nombre text,
 					  						apellido text,
 					  						domicilio text,
@@ -224,6 +226,12 @@ func crearTablas() {
 					  		start 1 
 					  		cache 1 
 					  		owned by rechazo.nrorechazo;
+
+					  alter sequence aumentoCabecera 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by cabecera.nroresumen;
 					  		
 					  alter sequence aumentoAlerta 
 					  		increment 1 
@@ -641,6 +649,70 @@ func autorizarCompra() {
 }
 
 
+func generarResumen() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`create or replace function generarResumen(numcliente int, periodo_mes int, periodo_anio int) returns void as $$
+	
+					   declare
+					   		total decimal(7,2);
+					   		monto_parcial decimal(7,2);
+					   		nro_tarjeta char(16);
+					   		nombre_cliente text;
+					   		apellido_cliente text;
+					   		domicilio_cliente text;
+					   		auxiliar record;
+					   		ultimoNro int;
+					   		fecha_inicio date;
+					   		fecha_cierre date;
+					   		fecha_vto date;
+					   		
+					   begin
+					   		perform * from cliente where nrocliente = numcliente;
+					   		if (not found) then
+					   			raise 'El nro de cliente % es invalido',numcliente;
+					   		end if;
+					   		
+					   		if (periodo_anio!=2022 or periodo_mes<0 or periodo_mes>12) then 
+					   		raise 'El mes % es invalido',periodo_mes;
+					   		raise 'El año % es invalido',periodo_anio;
+					   		end if;
+					   		
+					   		select * into auxiliar from cliente where nrocliente = numcliente;
+					   		nombre_cliente := auxiliar.nombre;
+					   		apellido_cliente := auxiliar.apellido;
+					   		domicilio_cliente := auxiliar.domicilio;
+					   		
+					   		select * into auxiliar  from tarjeta t where t.nrocliente = numcliente;
+					   		nro_tarjeta := auxiliar.nrotarjeta;
+					   		ultimoNro := right (nro_tarjeta,1);
+					   		
+					   		select * into auxiliar from cierre where año = periodo_anio and mes = periodo_mes and terminacion = ultimoNro;
+					   		fecha_inicio:= auxiliar.fechainicio;
+					   		fecha_cierre:= auxiliar.fechacierre;
+					   		fecha_vto:= auxiliar.fechavto;
+					   		
+					   		total := 0.00;
+					   		for monto_parcial in select c.monto from compra c
+					   		where (select extract (month from c.fecha) = periodo_mes and c.nrotarjeta=nro_tarjeta) loop
+					   			total := total+ monto_parcial;
+					   		end loop;
+					   		
+					   		insert into cabecera values (nextval('aumentoCabecera'),nombre_cliente, apellido_cliente, domicilio_cliente,
+					   									nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+					   		end;
+					   		$$ language plpgsql;`)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
 func probarConsumos() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -754,6 +826,7 @@ func menuPrincipal() *wmenu.Menu {
 		autorizarCompra()
 		probarConsumos()
 		llamarConsumos()
+		generarResumen()
 		mv := menuVolver()
 		return mv.Run()
 	})
