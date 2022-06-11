@@ -146,8 +146,6 @@ func crearTablas() {
   					  
   					  create sequence aumentoAlerta;
 
-  				      create sequence aumentoDetalle;
-
   					  create table cliente(nrocliente int,
 										   nombre text,
 										   apellido text,
@@ -200,7 +198,7 @@ func crearTablas() {
 					  						total decimal(8,2));   
 
 					  create table detalle(nroresumen int,
-					  					   nrolinea int not null default nextval('aumentoDetalle'),
+					  					   nrolinea int,
 					  					   fecha date,
 					  					   nombrecomercio text,
 					  					   monto decimal(7,2));     
@@ -239,15 +237,7 @@ func crearTablas() {
 					  		increment 1 
 					  		start 1 
 					  		cache 1 
-					  		owned by alerta.nroalerta;
-
-					  alter sequence aumentoDetalle 
-					  		increment 1 
-					  		start 1 
-					  		cache 1 
-					  		owned by detalle.nrolinea;
-					  		`)
-					  		
+					  		owned by alerta.nroalerta;`)
 
     if err != nil {
     	log.Fatal(err)
@@ -547,8 +537,8 @@ func cargarComercio() {
 	}
 	defer db.Close()
 
-	 _, err = db.Exec(`insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1744','6541-6542');
-	 				   insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1614','6785-1354');
+	 _, err = db.Exec(`insert into comercio values(1935485,'McDonalds','Concejal Tribulato 636','1714','6541-6542');
+	 				   insert into comercio values(3455465,'Peluqueria Adomo','Av. Victorica 421','1514','6785-1354');
 	 				   insert into comercio values(9869845,'Supermercado Li','Crisóstomo Álvarez 2825','1406','2251-5268');
 	 				   insert into comercio values(2314575,'Santeria Espacio Afrodita','Av.Juan Domingo Peron 1522','1663','4846-7639');
 	 				   insert into comercio values(2609429,'Burger King','Santa Rosa 1680','1714','6245-9214');
@@ -677,15 +667,10 @@ func generarResumen() {
 					   		apellido_cliente text;
 					   		domicilio_cliente text;
 					   		auxiliar record;
-					   		auxiliar2 record;
 					   		ultimoNro int;
 					   		fecha_inicio date;
 					   		fecha_cierre date;
 					   		fecha_vto date;
-					   		monto_compra decimal(7,2);
-					   		fecha_compra timestamp;
-					   		nombre_comercio text;
-                            nro_Resumen int;
 					   		
 					   begin
 					   		perform * from cliente where nrocliente = numcliente;
@@ -719,27 +704,7 @@ func generarResumen() {
 					   		end loop;
 					   		
 					   		insert into cabecera values (nextval('aumentoCabecera'),nombre_cliente, apellido_cliente, domicilio_cliente,
-					   				   					nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
-                            
-                            for auxiliar2 in select * from compra c
-                            where (select extract (month from c.fecha) = periodo_mes and c.nrotarjeta=nro_tarjeta) loop
-
-                            monto_compra := auxiliar2.monto;
-                            fecha_compra := auxiliar2.fecha;
-
-                            select * into auxiliar from comercio c where auxiliar2.nrocomercio = c.nrocomercio;
-                            nombre_comercio := auxiliar.nombre;
-
-                            select * into auxiliar from cabecera cb where 
-                            cb.nombre = nombre_cliente and cb.apellido = apellido_cliente and cb.domicilio = domicilio_cliente and
-                            cb.nrotarjeta = nro_tarjeta and cb.desde = fecha_inicio and cb.hasta = fecha_cierre and cb.vence = fecha_vto;
-                            
-                            nro_Resumen := auxiliar.nroresumen;
-                            insert into detalle values (nro_Resumen, nextval('aumentoDetalle'),
-                                                        fecha_compra, nombre_comercio, monto_compra);
-
-                            end loop;
-                                                           
+					   									nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
 					   		end;
 					   		$$ language plpgsql;`)
 	if err != nil {
@@ -842,6 +807,7 @@ func ingresoRechazoAlerta() {
 	defer db.Close()
 
 	_, err = db.Query(`create or replace function ingresoRechazoAlerta() returns trigger as $$
+
 					   begin
 					   		insert into alerta(nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion) 
 					   					values(nextval('aumentoAlerta'),new.nrotarjeta, new.fecha,new.nrorechazo,0,'Se produjo un nuevo rechazo');
@@ -850,6 +816,47 @@ func ingresoRechazoAlerta() {
 					   $$ language plpgsql;
 
 					   create trigger ingresoRechazoAlerta_trg after insert on rechazo for each row execute procedure ingresoRechazoAlerta();`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func dosComprasComDifMismoCPAlerta() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`create or replace function dosComprasComDifMismoCPAlerta() returns trigger as $$
+					   
+					   declare
+					   		ultima record;
+					   		tiempo decimal;
+					   		cp1 record;
+					   		cp2 record;
+
+					   begin
+					   		select * into ultima from compra where nrotarjeta = new.nrotarjeta order by nrotarjeta desc limit 1;
+					   		if not found then
+					   			return new;
+					   		end if;
+					   		
+							select into tiempo extract(epoch from new.fecha - ultima.fecha);
+							select codigopostal into cp1 from comercio where nrocomercio = ultima.nrocomercio;
+							select codigopostal into cp2 from comercio where nrocomercio = new.nrocomercio;
+
+							if tiempo < 60 and ultima.nrocomercio != new.nrocomercio and cp1 = cp2 then
+								insert into alerta (nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion)
+											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 1, 'Compra en 1 minuto en mismo CP');
+							end if;
+							return new;
+					   	end;
+					   	$$ language plpgsql;
+					   
+					   	create trigger dosComprasComDifMismoCPAlerta_trg before insert on compra for each row execute procedure dosComprasComDifMismoCPAlerta();`)
 
 	if err != nil {
 		log.Fatal(err)
@@ -903,10 +910,11 @@ func menuPrincipal() *wmenu.Menu {
 	})
 	menu.Option("Cargar funciones", nil, false, func(opt wmenu.Opt) error {
 		fmt.Println("")
-		ingresoRechazoAlerta()	
+		ingresoRechazoAlerta()
 		autorizarCompra()
 		probarConsumos()
 		llamarConsumos()
+		dosComprasComDifMismoCPAlerta()
 		generarResumen()
 		probarResumen()
 		llamarResumen()
