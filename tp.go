@@ -574,7 +574,7 @@ func cargarConsumos() {
 
 	_, err = db.Exec(`insert into consumo values('4455674512546534','2020',1935485,11320.00);
 					  insert into consumo values('4455674512546534','2020',9836840,15840.50);	 
-					  insert into consumo values('1435471512346032','1212',1935485,8900.5); 
+					  insert into consumo values('1435471512346032','1212',1935485,8900.50); 
 					  insert into consumo values('1435471512346032','1212',3455465,5750.00);
 					  insert into consumo values('1435471512346032','1213',3455465,100.00);
 					  insert into consumo values('7777612376765651','1942',3455465,2005.00); 
@@ -823,14 +823,14 @@ func ingresoRechazoAlerta() {
 }
 
 
-func dosComprasComDifMismoCPAlerta() {
+func dosComprasMenosUnMinutoMismoCPAlerta() {
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	_, err = db.Query(`create or replace function dosComprasComDifMismoCPAlerta() returns trigger as $$
+	_, err = db.Query(`create or replace function dosComprasMenosUnMinutoMismoCPAlerta() returns trigger as $$
 					   
 					   declare
 					   		ultima record;
@@ -850,13 +850,56 @@ func dosComprasComDifMismoCPAlerta() {
 
 							if tiempo < 60 and ultima.nrocomercio != new.nrocomercio and cp1 = cp2 then
 								insert into alerta (nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion)
-											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 1, 'Compra en 1 minuto en mismo CP');
+											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 1, 'Compra en menos de 1 minuto en mismo CP');
 							end if;
 							return new;
 					   	end;
 					   	$$ language plpgsql;
 					   
-					   	create trigger dosComprasComDifMismoCPAlerta_trg before insert on compra for each row execute procedure dosComprasComDifMismoCPAlerta();`)
+					   	create trigger dosComprasMenosUnMinutoMismoCPAlerta_trg 
+					   	before insert on compra for each row execute procedure dosComprasMenosUnMinutoMismoCPAlerta();`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func dosComprasMenosCincoMinutosDifCPAlerta() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`create or replace function dosComprasMenosCincoMinutosDifCPAlerta() returns trigger as $$
+					   
+					   declare
+					   		ultima record;
+					   		tiempo decimal;
+					   		cp1 record;
+					   		cp2 record;
+
+					   begin
+					   		select * into ultima from compra where nrotarjeta = new.nrotarjeta order by nrotarjeta desc limit 1;
+					   		if not found then
+					   			return new;
+					   		end if;
+					   		
+							select into tiempo extract(epoch from new.fecha - ultima.fecha);
+							select codigopostal into cp1 from comercio where nrocomercio = ultima.nrocomercio;
+							select codigopostal into cp2 from comercio where nrocomercio = new.nrocomercio;
+
+							if tiempo < 300 and ultima.nrocomercio != new.nrocomercio and cp1 != cp2 then
+								insert into alerta (nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion)
+											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 1, 'Compra en menos de 5 minutos en diferente CP');
+							end if;
+							return new;
+					   	end;
+					   	$$ language plpgsql;
+					   
+					   	create trigger dosComprasMenosCincoMinutosDifCPAlerta_trg 
+					   	before insert on compra for each row execute procedure dosComprasMenosCincoMinutosDifCPAlerta();`)
 
 	if err != nil {
 		log.Fatal(err)
@@ -912,9 +955,10 @@ func menuPrincipal() *wmenu.Menu {
 		fmt.Println("")
 		ingresoRechazoAlerta()
 		autorizarCompra()
+		dosComprasMenosUnMinutoMismoCPAlerta()
+		dosComprasMenosCincoMinutosDifCPAlerta()
 		probarConsumos()
 		llamarConsumos()
-		dosComprasComDifMismoCPAlerta()
 		generarResumen()
 		probarResumen()
 		llamarResumen()
