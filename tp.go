@@ -146,6 +146,8 @@ func crearTablas() {
   					  
   					  create sequence aumentoAlerta;
 
+  				      create sequence aumentoDetalle;
+
   					  create table cliente(nrocliente int,
 										   nombre text,
 										   apellido text,
@@ -198,7 +200,7 @@ func crearTablas() {
 					  						total decimal(8,2));   
 
 					  create table detalle(nroresumen int,
-					  					   nrolinea int,
+					  					   nrolinea int not null default nextval('aumentoDetalle'),
 					  					   fecha date,
 					  					   nombrecomercio text,
 					  					   monto decimal(7,2));     
@@ -237,7 +239,15 @@ func crearTablas() {
 					  		increment 1 
 					  		start 1 
 					  		cache 1 
-					  		owned by alerta.nroalerta;`)
+					  		owned by alerta.nroalerta;
+
+					  alter sequence aumentoDetalle 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by detalle.nrolinea;
+					  		`)
+					  		
 
     if err != nil {
     	log.Fatal(err)
@@ -373,7 +383,7 @@ func cargarTarjetas() {
     		 		   insert into tarjeta values('8123612763817657', 3487910, '201912', '203312', '6661', 121000.00, 'vigente');
     		 		   insert into tarjeta values('7612376287677872', 0216546, '201111', '202301', '3942', 171000.00, 'vigente');
     		 		   insert into tarjeta values('7777612376765651', 2105646, '202102', '204309', '1942', 111000.00, 'vigente');
-    		 		   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'vigente');
+    		 		   insert into tarjeta values('8986664678589100', 8845660, '201108', '202112', '8888', 111100.00, 'anulada');
     		 		   insert into tarjeta values('8008555687165299', 8845660, '201708', '202608', '6666', 181500.00, 'vigente');
     		 		   insert into tarjeta values('3200111161616232', 8520147, '201403', '202804', '4423', 121500.00, 'vigente');
     		 		   insert into tarjeta values('1111323453543433', 8520147, '201606', '202907', '1456', 131500.00, 'vigente')`)	
@@ -667,10 +677,15 @@ func generarResumen() {
 					   		apellido_cliente text;
 					   		domicilio_cliente text;
 					   		auxiliar record;
+					   		auxiliar2 record;
 					   		ultimoNro int;
 					   		fecha_inicio date;
 					   		fecha_cierre date;
 					   		fecha_vto date;
+					   		monto_compra decimal(7,2);
+					   		fecha_compra timestamp;
+					   		nombre_comercio text;
+                            nro_Resumen int;
 					   		
 					   begin
 					   		perform * from cliente where nrocliente = numcliente;
@@ -688,7 +703,7 @@ func generarResumen() {
 					   		apellido_cliente := auxiliar.apellido;
 					   		domicilio_cliente := auxiliar.domicilio;
 					   		
-					   		select * into auxiliar  from tarjeta t where t.nrocliente = numcliente;
+					   		select * into auxiliar  from tarjeta t where t.nrocliente = numcliente and t.estado != 'anulada';
 					   		nro_tarjeta := auxiliar.nrotarjeta;
 					   		ultimoNro := right (nro_tarjeta,1);
 					   		
@@ -704,7 +719,27 @@ func generarResumen() {
 					   		end loop;
 					   		
 					   		insert into cabecera values (nextval('aumentoCabecera'),nombre_cliente, apellido_cliente, domicilio_cliente,
-					   									nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+					   				   					nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+                            
+                            for auxiliar2 in select * from compra c
+                            where (select extract (month from c.fecha) = periodo_mes and c.nrotarjeta=nro_tarjeta) loop
+
+                            monto_compra := auxiliar2.monto;
+                            fecha_compra := auxiliar2.fecha;
+
+                            select * into auxiliar from comercio c where auxiliar2.nrocomercio = c.nrocomercio;
+                            nombre_comercio := auxiliar.nombre;
+
+                            select * into auxiliar from cabecera cb where 
+                            cb.nombre = nombre_cliente and cb.apellido = apellido_cliente and cb.domicilio = domicilio_cliente and
+                            cb.nrotarjeta = nro_tarjeta and cb.desde = fecha_inicio and cb.hasta = fecha_cierre and cb.vence = fecha_vto;
+                            
+                            nro_Resumen := auxiliar.nroresumen;
+                            insert into detalle values (nro_Resumen, nextval('aumentoDetalle'),
+                                                        fecha_compra, nombre_comercio, monto_compra);
+
+                            end loop;
+                                                           
 					   		end;
 					   		$$ language plpgsql;`)
 	if err != nil {
@@ -752,6 +787,52 @@ func llamarConsumos() {
 	}
 }
 
+
+func probarResumen() {
+
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	
+	_, err = db.Query(`create or replace function probarResumen() returns void as $$ 
+
+					   declare
+					   		v record;
+					   		a record;
+					   		resultado record;
+					   		ultimoNro int;
+
+					   begin
+					   		for v in select * from tarjeta t where t.estado != 'anulada' loop
+					   			ultimoNro := right (v.nrotarjeta,1);
+					   			for a in select * from cierre where terminacion = ultimoNro loop
+					   				select generarResumen(v.nrocliente, a.mes, a.año) into resultado;
+					   			end loop;
+					   		end loop;
+					   end;
+					   $$ language plpgsql;`)
+			
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func llamarResumen() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`select probarResumen();`)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func ingresoRechazoAlerta() {
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
@@ -827,6 +908,8 @@ func menuPrincipal() *wmenu.Menu {
 		probarConsumos()
 		llamarConsumos()
 		generarResumen()
+		probarResumen()
+		llamarResumen()
 		mv := menuVolver()
 		return mv.Run()
 	})
