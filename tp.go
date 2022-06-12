@@ -892,7 +892,7 @@ func dosComprasMenosCincoMinutosDifCPAlerta() {
 
 							if tiempo < 300 and ultima.nrocomercio != new.nrocomercio and cp1 != cp2 then
 								insert into alerta (nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion)
-											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 1, 'Compra en menos de 5 minutos en diferente CP');
+											values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 5, 'Compra en menos de 5 minutos en diferente CP');
 							end if;
 							return new;
 					   	end;
@@ -900,6 +900,48 @@ func dosComprasMenosCincoMinutosDifCPAlerta() {
 					   
 					   	create trigger dosComprasMenosCincoMinutosDifCPAlerta_trg 
 					   	before insert on compra for each row execute procedure dosComprasMenosCincoMinutosDifCPAlerta();`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+func excesoLimiteAlerta() {
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`create or replace function excesoLimiteAlerta() returns trigger as $$
+
+					   declare
+					   		ultimo record;
+					   		anio decimal;
+					   		mes decimal;
+					   		dia decimal;
+					   		
+					    begin
+					    	select * into ultimo from rechazo where nrotarjeta = new.nrotarjeta and motivo = 'supera limite tarjeta' order by nrotarjeta desc limit 1;
+					    	if not found then
+					    		return new;
+					    	end if;
+					    	
+					    	select into dia extract(day from new.fecha - ultimo.fecha);
+					    	select into mes extract(month from new.fecha - ultimo.fecha);
+					    	select into anio extract(year from new.fecha - ultimo.fecha);
+					    	
+					    	if dia < 1 and mes < 1 and anio < 1 then
+					    		update tarjeta set estado = 'suspendida' where nrotarjeta = new.nrotarjeta;
+					    		insert into alerta (nroalerta,nrotarjeta,fecha,nrorechazo,codalerta,descripcion)
+					    					values(nextval('aumentoAlerta'), new.nrotarjeta, new.fecha, null, 32, 'Tarjeta suspendida por 2 excesos de limite en el mismo dia');
+					    	end if;
+					    	return new;
+					    end;
+					    $$ language plpgsql;
+
+					    create trigger excesoLimiteAlerta_trg before insert on rechazo for each row execute procedure excesoLimiteAlerta();`)
 
 	if err != nil {
 		log.Fatal(err)
@@ -957,6 +999,7 @@ func menuPrincipal() *wmenu.Menu {
 		autorizarCompra()
 		dosComprasMenosUnMinutoMismoCPAlerta()
 		dosComprasMenosCincoMinutosDifCPAlerta()
+		excesoLimiteAlerta()
 		probarConsumos()
 		llamarConsumos()
 		generarResumen()
