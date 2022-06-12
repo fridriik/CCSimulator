@@ -697,7 +697,7 @@ func generarResumen() {
 					   		end loop;
 				   		
 					   		insert into cabecera values (nextval('aumentoCabecera'),nombre_cliente, apellido_cliente, domicilio_cliente,
-					   									nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+					   			nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
 					   		end;
 					   		$$ language plpgsql;`)
 	if err != nil {
@@ -785,7 +785,6 @@ func probarResumen() {
 		log.Fatal(err)
 	}
 }
-
 
 /*
 Test para probar la funcion probarResumen()
