@@ -73,3 +73,43 @@ Para imprimir por consola los elementos agregados a la base de datos::
 
 
 La dificultad estuvo en que en un principio se imprimian los elementos como arreglo de byte ascii,para solucionar esto se utilizo la funcion ftm.Sprintf pasandole por parametro lo obtenido de la lectura de dichos elementos.
+
+
+== Implementación
+
+
+
+Como observamos en el código, la funcion `main()` invoca a la función `menuPrincipal()` que despliega un menu de opciones
+
+para que el usuario pueda interactuar con la base de datos.
+
+
+
+La función `crearTablas()` se conecta con la base de datos, y ejecuta las sentencias en sql que crean las tablas para la base de datos.
+
+
+
+Las funciones `cargarClientes()`, `cargarComercio()`, `cargarTarjetas()`, `cargarCierres()` y `cargarConsumos()` rellenan con datos las 
+
+tablas creadas en la funcion `crearTablas()`.
+
+
+
+La función `generarResumen()` se conecta con la base de datos, y ejecuta la funcion `generarResumen(numcliente int, periodo_mes int, periodo_anio int)`,
+
+que a partir del numero del cliente se fija cuál es su tarjeta y su terminación, para poder sumar los montos de las compras realizadas en el periodo 
+
+pasado por parametro. Y así generar el resumen de la tarjeta del cliente en el periodo dado.
+
+
+
+La función `autorizarCompra()` se fija que el numero de la tarjeta y el codigo de seguridad coresponda a una tarjeta existente. 
+
+Además debe estar vigente y no estar vencida. Después se recorren los montos de las compras pagadas de esa tarjeta y se los suma en la variable 
+
+`total` para verificar que no supere el limite de compra. En caso de cumplir con todo se inserta la compra a la tabla `compra`. 
+
+
+
+La función `ingresoRechazoAlerta()` inserta en `alerta` los rechazos. Ejecuta el trigger después de ingresar un valor en la tabla `rechazo`.
+
