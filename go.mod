@@ -3,6 +3,7 @@ module arroyo-avalos-farias-insua-tp
 go 1.17
 
 require (
+	github.com/boltdb/bolt v1.3.1
 	github.com/dixonwille/wmenu/v5 v5.1.0
 	github.com/lib/pq v1.10.6
 )
