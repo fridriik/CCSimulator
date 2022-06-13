@@ -113,6 +113,8 @@ func crearTablasYSecuencias() {
 
   					  create sequence aumentoAlerta;
 
+                        create sequence aumentoDetalle;
+
   					  create table cliente(nrocliente int,
 										   nombre text,
 										   apellido text,
@@ -165,7 +167,7 @@ func crearTablasYSecuencias() {
 					  						total decimal(8,2));   
 
 					  create table detalle(nroresumen int,
-					  					   nrolinea int,
+					  					   nrolinea int not null default nextval('aumentodetalle'),
 					  					   fecha date,
 					  					   nombrecomercio text,
 					  					   monto decimal(7,2));     
@@ -204,7 +206,13 @@ func crearTablasYSecuencias() {
 					  		increment 1 
 					  		start 1 
 					  		cache 1 
-					  		owned by alerta.nroalerta;`)
+					  		owned by alerta.nroalerta;
+                              
+                        alter sequence aumentoDetalle 
+					  		increment 1 
+					  		start 1 
+					  		cache 1 
+					  		owned by detalle.nrolinea;`)
     if err != nil {
     	log.Fatal(err)
     } 
@@ -651,7 +659,7 @@ func generarResumen() {
 	defer db.Close()
 
 	_, err = db.Query(`create or replace function generarResumen(numcliente int, periodo_mes int, periodo_anio int) returns void as $$
-
+	
 					   declare
 					   		total decimal(7,2);
 					   		monto_parcial decimal(7,2);
@@ -660,11 +668,16 @@ func generarResumen() {
 					   		apellido_cliente text;
 					   		domicilio_cliente text;
 					   		auxiliar record;
+					   		auxiliar2 record;
 					   		ultimoNro int;
 					   		fecha_inicio date;
 					   		fecha_cierre date;
 					   		fecha_vto date;
-
+					   		monto_compra decimal(7,2);
+					   		fecha_compra timestamp;
+					   		nombre_comercio text;
+                            nro_Resumen int;
+					   		
 					   begin
 					   		perform * from cliente where nrocliente = numcliente;
 					   		if (not found) then
@@ -672,19 +685,19 @@ func generarResumen() {
 					   		end if;
 					   		
 					   		if (periodo_anio!=2022 or periodo_mes<0 or periodo_mes>12) then 
-						   		raise 'El mes % es invalido',periodo_mes;
-						   		raise 'El año % es invalido',periodo_anio;
+					   		raise 'El mes % es invalido',periodo_mes;
+					   		raise 'El año % es invalido',periodo_anio;
 					   		end if;
-
+					   		
 					   		select * into auxiliar from cliente where nrocliente = numcliente;
 					   		nombre_cliente := auxiliar.nombre;
 					   		apellido_cliente := auxiliar.apellido;
 					   		domicilio_cliente := auxiliar.domicilio;
-			   		
+					   		
 					   		select * into auxiliar  from tarjeta t where t.nrocliente = numcliente and t.estado != 'anulada';
 					   		nro_tarjeta := auxiliar.nrotarjeta;
 					   		ultimoNro := right (nro_tarjeta,1);
-				   		
+					   		
 					   		select * into auxiliar from cierre where año = periodo_anio and mes = periodo_mes and terminacion = ultimoNro;
 					   		fecha_inicio:= auxiliar.fechainicio;
 					   		fecha_cierre:= auxiliar.fechacierre;
@@ -695,9 +708,29 @@ func generarResumen() {
 					   		where (select extract (month from c.fecha) = periodo_mes and c.nrotarjeta=nro_tarjeta) loop
 					   			total := total+ monto_parcial;
 					   		end loop;
-				   		
+					   		
 					   		insert into cabecera values (nextval('aumentoCabecera'),nombre_cliente, apellido_cliente, domicilio_cliente,
-					   			nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+					   				   					nro_tarjeta,fecha_inicio,fecha_cierre, fecha_vto, total);
+                            
+                            for auxiliar2 in select * from compra c
+                            where (select extract (month from c.fecha) = periodo_mes and c.nrotarjeta=nro_tarjeta) loop
+
+                            monto_compra := auxiliar2.monto;
+                            fecha_compra := auxiliar2.fecha;
+
+                            select * into auxiliar from comercio c where auxiliar2.nrocomercio = c.nrocomercio;
+                            nombre_comercio := auxiliar.nombre;
+
+                            select * into auxiliar from cabecera cb where 
+                            cb.nombre = nombre_cliente and cb.apellido = apellido_cliente and cb.domicilio = domicilio_cliente and
+                            cb.nrotarjeta = nro_tarjeta and cb.desde = fecha_inicio and cb.hasta = fecha_cierre and cb.vence = fecha_vto;
+                            
+                            nro_Resumen := auxiliar.nroresumen;
+                            insert into detalle values (nro_Resumen, nextval('aumentoDetalle'),
+                                                        fecha_compra, nombre_comercio, monto_compra);
+
+                            end loop;
+                                                           
 					   		end;
 					   		$$ language plpgsql;`)
 	if err != nil {
@@ -785,6 +818,7 @@ func probarResumen() {
 		log.Fatal(err)
 	}
 }
+
 
 /*
 Test para probar la funcion probarResumen()
