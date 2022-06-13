@@ -1,8 +1,11 @@
 = Base de datos: Trabajo Práctico Grupal
 
-Arroyo Guadalupe <guadalupenicole102@gmail.com>; Avalos Manuel <avaloslautaro10@gmail.com>; Farias Federico <federicofarias@outlook.com>; Insua Agustina <aguss.insua99@gmail.com>
+Integrantes:: Arroyo Guadalupe <guadalupenicole102@gmail.com>
+Avalos Manuel <avaloslautaro10@gmail.com>
+Farias Federico <federicofarias@outlook.com>
+Insua Agustina <aguss.insua99@gmail.com>
 
-v1, {11-06-2022}. Docentes Hernán Rondelli y Hernán Czemerinski
+Docentes:: Hernán Rondelli - Hernán Czemerinski
 
 :title-page:
 
@@ -38,9 +41,12 @@ En este apartado se nombraran problemas que transcurrieron durante la implementa
 
 General::
 
+Para poder trabajar adecuadamente y sin estar esperando los commits de cada uno de los integrantes decidimos usar https://codecollab.io para codear los 4 al mismo tiempo y meets para definir los puntos a seguir.
+
+Realizamos una busqueda constante de la documentacion para resolver de manera adecuada los diferentes problemas que surgieron a traves del trabajo. 
+
 Para poder generar los numeros de rechazos, compra, linea de detalle. resumen y de alerta utilizamos secuencias para no cambiar el tipo de variable a `SERIAL` y luego tener que utilizar `DEFAULT` en los inserts.
 
-Tuvimos dificultades en tener que realizar una busqueda constante de la documentacion ya que al implementar los errores de sintaxis fueron factores claves en los problemas. 
 
 
 
