@@ -1,0 +1,51 @@
+= Base de datos: Trabajo Práctico Grupal
+Arroyo Guadalupe <guadalupenicole102@gmail.com>; Avalos Manuel <avaloslautaro10@gmail.com>; Farias Federico <federicofarias@outlook.com>; Insua Agustina <aguss.insua99@gmail.com>
+v1, {11-06-2022}. Docentes Hernán Rondelli y Hernán Czemerinski
+:title-page:
+:numbered:
+:source-highlighter: coderay
+:tabsize: 4
+
+== Introducción
+
+El objetivo de este trabajo práctico es la creación de una base de datos para almacenar informacion
+relativa a tarjetas de crédito, desde la autorizacion de compra, generar resumenes y generar alertas internas para revisar la actividad de los clientes con sus compras. Para llevar a cabo esto, todo codigo SQL escrito se ejecutara desde una aplicacion CLI escrita en Go.
+Por último, para poder comparar el modelo relacional con un modelo no relacional NoSQL, se implementa una base de datos NoSQL (BoltDB) basada en JSON, la cual carga tres instancias de datos de 3 entidades pertenecientes a la base de datos.
+
+== Descripción
+
+Vamos a contar sobre algunos problemas que tuvimos y las soluciones encontradas:
+
+
+
+Tuvimos dificultades para generar el resumen, ya que al probarlo saltaban muchos errores, uno de ellos era 
+que la variable auxiliar guardaba muchos valores de distintas tablas. Lo solucionamos separando en distintos
+select, para que así auxiliar tome los valores de las filas una tabla por vez.
+
+
+== Implementación
+
+.Codigo Go 
+[source, golang]
+----
+include::tp.go[] //creo que se pone así, no estoy segura como importar el codigo de Go
+----
+
+Como observamos en el código, la funcion `main()` invoca a la función `menuPrincipal()` que despliega un menu de opciones
+para que el usuario pueda interactuar con la base de datos.
+
+La función `crearTablas()` se conecta con la base de datos, y ejecuta las sentencias en sql que crean las tablas para la base de datos.
+
+Las funciones `cargarClientes()`, `cargarComercio()`, `cargarTarjetas()`, `cargarCierres()` y `cargarConsumos()` rellenan con datos las 
+tablas creadas en la funcion `crearTablas()`.
+
+La funcion `generarResumen()` se conecta con la base de datos, y ejecuta la funcion `generarResumen(numcliente int, periodo_mes int, periodo_anio int)`,
+que a partir del numero del cliente se fija cuál es su tarjeta y su terminación, para poder sumar los montos de las compras realizadas en el periodo 
+pasado por parametro. Y así generar el resumen de la tarjeta del cliente en el periodo dado.
+
+
+== Conclusiones
+
+Gracias a este trabajo profundizamos un poco más sobre la programación en sql y golang. 
+También pudimos adquirir nuevos conocimientos al trabajar en equipo, entendemos que esto nos servirá en la vida profesional cuando tengamos 
+que vincularnos con otros sectores y trabajar de forma colaborativa.
