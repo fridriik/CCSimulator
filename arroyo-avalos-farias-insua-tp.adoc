@@ -113,3 +113,38 @@ Además debe estar vigente y no estar vencida. Después se recorren los montos d
 
 La función `ingresoRechazoAlerta()` inserta en `alerta` los rechazos. Ejecuta el trigger después de ingresar un valor en la tabla `rechazo`.
 
+La función `dosComprasMenosUnMinutoCPAlerta()` inserta en la variable `ultima` la última compra realizada por una tarjeta. Después verifica si el tiempo 
+
+de la compra es menor a un minuto, si los numeros de comercio son distintos y si el codigo postal es el mismo para ingresar los valores a la tabla de
+
+`alerta`. Ejecuta el trigger antes de insertar una compra en la tabla `compra`.
+
+
+
+La función `dosComprasMenosCincoMinutosDifCPAlerta()` ingresa en la variable `ultima` la última compra realizada por una tarjeta. Luego verifica si el tiempo
+
+de la compra es menor a cinco minutos, si los numeros de los comercios son distintos, y si los codigos postales son diferentes para insertar en la tabla de
+
+`alerta` los valores requeridos. Ejecuta el trigger entes de insertar una compra en la tabla de `compra`.
+
+
+
+La función `dosComprasMenosCincoMinutosDifCPAlerta()` ingresa en la variable `ultima` la última compra realizada por una tarjeta. Luego verifica si el tiempo
+
+de la compra es menor a cinco minutos, si los numeros de los comercios son distintos, y si los codigos postales son diferentes para insertar en la tabla de
+
+`alerta` los valores requeridos. Ejecuta el trigger entes de insertar una compra en la tabla de `compra`.
+
+
+
+La función `excesoLimiteAlerta()` ingresa en la variable `ultimo` el ultimo rechazo que realizado por una tarjeta. Luego verifica si el dia, el mes y el año es el mismo que el nuevo valor de fecha para actualizar el estado de esa tarjeta e insertar una `alerta` con los valores requeridos.
+
+Ejecuta el trigger entes de insertar un rechazo en la tabla de `rechazo`.
+
+
+
+== Conclusiones
+
+
+
+Gracias a este trabajo logramos profundizar y aplicar conocimientos sobre la programación en sql y golang.A su vez, nos permitio entender mejor las diferencias entre las bases de datos relacionales y las no relacionales.
