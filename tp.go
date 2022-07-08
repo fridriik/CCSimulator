@@ -407,146 +407,55 @@ func cargarComercio() {
 Inserta los datos de los cierres
 */
 func cargarCierres() {
+	generarCierres()
+	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer db.Close()
+	_, err = db.Query(`select generarCierres(2022);`)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+/*
+Genera los cierres automaticamente
+*/
+func generarCierres() {
 
 	db, err := sql.Open("postgres", "user=postgres host=localhost dbname=tp sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	
+	_, err = db.Query(`create or replace function generarCierres(anio int) returns void as $$
 
-	 _, err = db.Exec(`insert into cierre values(2022,01,0,'2022-01-16','2022-01-15','2022-01-21');
-	 				   insert into cierre values(2022,02,0,'2022-02-19','2022-02-18','2022-02-25');
-	 				   insert into cierre values(2022,03,0,'2022-03-17','2022-03-16','2022-03-22');
-	 				   insert into cierre values(2022,04,0,'2022-04-18','2022-04-17','2022-04-24');
-	 	    		   insert into cierre values(2022,05,0,'2022-05-16','2022-05-15','2022-05-25');
-	 				   insert into cierre values(2022,06,0,'2022-06-18','2022-06-17','2022-06-22');
-	 				   insert into cierre values(2022,07,0,'2022-07-20','2022-07-19','2022-07-26');
-	 				   insert into cierre values(2022,08,0,'2022-08-16','2022-08-15','2022-08-21');
-	 				   insert into cierre values(2022,09,0,'2022-09-19','2022-09-18','2022-09-25');
-	 				   insert into cierre values(2022,10,0,'2022-10-18','2022-10-17','2022-10-24');
-	 				   insert into cierre values(2022,11,0,'2022-11-18','2022-11-17','2022-11-24');
-	 				   insert into cierre values(2022,12,0,'2022-12-17','2022-12-16','2022-12-22'); 
+					   declare 
+					   		fdesde date;
+					   		fhasta date;
+					   		fvto date;
 
+					   begin
+					   		for tarjeta in 0 .. 9 by 1 loop 
+								select into fdesde to_date((anio)::text || '01' || (select 1 + trunc(random()*4))::text, 'YYYYMMDD');
+								select into fhasta fdesde::date + cast((select 29 + trunc(random()*2))::text || 'days' as interval);
+								select into fvto fhasta::date + cast('10 days' as interval);
+										
+							for mes in 1 .. 12 by 1 loop
+								insert into cierre values(anio, mes, tarjeta, fdesde, fhasta, fvto);
+								select into fdesde fhasta::date + cast('1 days' as interval);
+								select into fhasta fdesde::date + cast((select 29 + trunc(random()*2))::text || 'days' as interval);
+								select into fvto fhasta::date + cast('10 days' as interval);
+							end loop;
+							end loop;
+						end;
+						$$ language plpgsql;`)
 
-                       insert into cierre values(2022,01,1,'2022-01-17','2022-01-16','2022-01-22');
-	 				   insert into cierre values(2022,02,1,'2022-02-19','2022-02-18','2022-02-25');
-	 				   insert into cierre values(2022,03,1,'2022-03-20','2022-03-19','2022-03-26');
-	 				   insert into cierre values(2022,04,1,'2022-04-18','2022-04-17','2022-04-24');
-	 				   insert into cierre values(2022,05,1,'2022-05-16','2022-05-15','2022-05-21');
-	 				   insert into cierre values(2022,06,1,'2022-06-16','2022-06-15','2022-06-21');
-	 				   insert into cierre values(2022,07,1,'2022-07-17','2022-07-16','2022-07-22');
-	 				   insert into cierre values(2022,08,1,'2022-08-18','2022-08-17','2022-08-23');
-	 				   insert into cierre values(2022,09,1,'2022-09-20','2022-09-19','2022-09-26');
-	 				   insert into cierre values(2022,10,1,'2022-10-19','2022-10-18','2022-10-25');
-	 				   insert into cierre values(2022,11,1,'2022-11-19','2022-11-18','2022-11-25');
-	 				   insert into cierre values(2022,12,1,'2022-12-20','2022-12-19','2022-12-26');
-
-	 				   insert into cierre values(2022,01,2,'2022-01-20','2022-01-19','2022-01-26');
-	 				   insert into cierre values(2022,02,2,'2022-02-16','2022-02-15','2022-02-21');
-	 				   insert into cierre values(2022,03,2,'2022-03-18','2022-03-17','2022-03-23');
-	 				   insert into cierre values(2022,04,2,'2022-04-16','2022-04-15','2022-04-21');
-	 				   insert into cierre values(2022,05,2,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,2,'2022-06-17','2022-06-16','2022-06-22');
-	 				   insert into cierre values(2022,07,2,'2022-07-19','2022-07-18','2022-07-25');
-	 				   insert into cierre values(2022,08,2,'2022-08-19','2022-08-17','2022-08-24');
-	 				   insert into cierre values(2022,09,2,'2022-09-20','2022-09-19','2022-09-26');
-	 				   insert into cierre values(2022,10,2,'2022-10-18','2022-10-17','2022-10-24');
-	 				   insert into cierre values(2022,11,2,'2022-11-18','2022-11-17','2022-11-24');
-	 				   insert into cierre values(2022,12,2,'2022-12-19','2022-12-18','2022-01-25');
-
-	 				   insert into cierre values(2022,01,3,'2022-01-16','2022-01-15','2022-01-21');
-	 				   insert into cierre values(2022,02,3,'2022-02-18','2022-02-17','2022-02-24');
-	 				   insert into cierre values(2022,03,3,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,3,'2022-04-19','2022-04-18','2022-04-25');
-	 				   insert into cierre values(2022,05,3,'2022-05-20','2022-05-19','2022-05-26');
-	 				   insert into cierre values(2022,06,3,'2022-06-21','2022-06-20','2022-06-27');
-	 				   insert into cierre values(2022,07,3,'2022-07-20','2022-07-19','2022-07-26');
-	 				   insert into cierre values(2022,08,3,'2022-08-18','2022-08-17','2022-08-24');
-	 				   insert into cierre values(2022,09,3,'2022-09-17','2022-09-16','2022-09-22');
-	 				   insert into cierre values(2022,10,3,'2022-10-17','2022-10-16','2022-10-22');
-	 				   insert into cierre values(2022,11,3,'2022-11-17','2022-11-15','2022-11-22');
-	 				   insert into cierre values(2022,12,3,'2022-12-16','2022-12-15','2022-12-21');
-
-	 				   insert into cierre values(2022,01,4,'2022-01-19','2022-01-18','2022-01-25');
-	 				   insert into cierre values(2022,02,4,'2022-02-18','2022-02-17','2022-02-24');
-	 				   insert into cierre values(2022,03,4,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,4,'2022-04-16','2022-04-15','2022-04-21');
-	 				   insert into cierre values(2022,05,4,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,4,'2022-06-18','2022-06-17','2022-06-24');
-	 				   insert into cierre values(2022,07,4,'2022-07-20','2022-07-19','2022-07-26');
-	 				   insert into cierre values(2022,08,4,'2022-08-20','2022-08-19','2022-08-26');
-	 				   insert into cierre values(2022,09,4,'2022-09-19','2022-09-18','2022-09-25');
-	 				   insert into cierre values(2022,10,4,'2022-10-17','2022-10-16','2022-10-22');
-	 				   insert into cierre values(2022,11,4,'2022-11-18','2022-11-17','2022-11-24');
-	 				   insert into cierre values(2022,12,4,'2022-12-19','2022-12-18','2022-12-25');
-
-	 				   insert into cierre values(2022,01,5,'2022-01-20','2022-01-19','2022-01-26');
-	 				   insert into cierre values(2022,02,5,'2022-02-20','2022-02-19','2022-02-26');
-	 				   insert into cierre values(2022,03,5,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,5,'2022-04-19','2022-04-18','2022-04-25');
-	 				   insert into cierre values(2022,05,5,'2022-05-21','2022-05-20','2022-05-27');
-	 				   insert into cierre values(2022,06,5,'2022-06-21','2022-06-20','2022-06-27');
-	 				   insert into cierre values(2022,07,5,'2022-07-19','2022-07-18','2022-07-25');
-	 				   insert into cierre values(2022,08,5,'2022-08-18','2022-08-17','2022-08-24');
-	 				   insert into cierre values(2022,09,5,'2022-09-17','2022-09-16','2022-09-22');
-	 				   insert into cierre values(2022,10,5,'2022-10-17','2022-10-16','2022-10-22');
-	 				   insert into cierre values(2022,11,5,'2022-11-18','2022-11-17','2022-11-24');
-	 				   insert into cierre values(2022,12,5,'2022-12-18','2022-12-18','2022-12-24');
-
-	 				   insert into cierre values(2022,01,6,'2022-01-17','2022-01-16','2022-01-22');
-	 				   insert into cierre values(2022,02,6,'2022-02-16','2022-02-15','2022-02-21');
-	 				   insert into cierre values(2022,03,6,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,6,'2022-04-16','2022-04-15','2022-04-21');
-	 				   insert into cierre values(2022,05,6,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,6,'2022-06-18','2022-06-17','2022-06-24');
-	 				   insert into cierre values(2022,07,6,'2022-07-19','2022-07-18','2022-07-25');
-	 				   insert into cierre values(2022,08,6,'2022-08-16','2022-08-15','2022-08-21');
-	 				   insert into cierre values(2022,09,6,'2022-09-16','2022-09-15','2022-09-21');
-	 				   insert into cierre values(2022,10,6,'2022-10-17','2022-10-16','2022-10-22');
-	 				   insert into cierre values(2022,11,6,'2022-11-19','2022-11-18','2022-11-25');
-	 				   insert into cierre values(2022,12,6,'2022-12-20','2022-12-19','2022-12-26');
-
-	 				   insert into cierre values(2022,01,7,'2022-01-20','2022-01-19','2022-01-26');
-	 				   insert into cierre values(2022,02,7,'2022-02-18','2022-02-17','2022-02-24');
-	 				   insert into cierre values(2022,03,7,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,7,'2022-04-19','2022-04-18','2022-04-25');
-	 				   insert into cierre values(2022,05,7,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,7,'2022-06-21','2022-06-20','2022-06-27');
-	 				   insert into cierre values(2022,07,7,'2022-07-20','2022-07-19','2022-07-26');
-	 				   insert into cierre values(2022,08,7,'2022-08-18','2022-08-17','2022-08-24');
-	 				   insert into cierre values(2022,09,7,'2022-09-19','2022-09-18','2022-09-25');
-	 				   insert into cierre values(2022,10,7,'2022-10-19','2022-10-18','2022-10-25');
-	 				   insert into cierre values(2022,11,7,'2022-11-21','2022-11-20','2022-11-27');
-	 				   insert into cierre values(2022,12,7,'2022-12-19','2022-12-18','2022-12-25');
-	 				   
-	 				   insert into cierre values(2022,01,8,'2022-01-16','2022-01-15','2022-01-21');
-	 				   insert into cierre values(2022,02,8,'2022-02-17','2022-02-16','2022-02-22');
-	 				   insert into cierre values(2022,03,8,'2022-03-17','2022-03-16','2022-03-22');
-	 				   insert into cierre values(2022,04,8,'2022-04-19','2022-04-18','2022-04-25');
-	 				   insert into cierre values(2022,05,8,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,8,'2022-06-18','2022-06-17','2022-06-24');
-	 				   insert into cierre values(2022,07,8,'2022-07-19','2022-07-18','2022-07-25');
-	 				   insert into cierre values(2022,08,8,'2022-08-18','2022-08-17','2022-08-23');
-	 				   insert into cierre values(2022,09,8,'2022-09-17','2022-09-16','2022-09-22');
-	 				   insert into cierre values(2022,10,8,'2022-10-18','2022-10-17','2022-10-24');
-	 				   insert into cierre values(2022,11,8,'2022-11-18','2022-11-17','2022-11-24');
-	 				   insert into cierre values(2022,12,8,'2022-12-20','2022-12-19','2022-12-26');
-
-	 				   insert into cierre values(2022,01,9,'2022-01-16','2022-01-15','2022-01-21');
-	 				   insert into cierre values(2022,02,9,'2022-02-16','2022-02-15','2022-02-21');
-	 				   insert into cierre values(2022,03,9,'2022-03-18','2022-03-17','2022-03-24');
-	 				   insert into cierre values(2022,04,9,'2022-04-19','2022-04-18','2022-04-25');
-	 				   insert into cierre values(2022,05,9,'2022-05-17','2022-05-16','2022-05-22');
-	 				   insert into cierre values(2022,06,9,'2022-06-21','2022-06-20','2022-06-27');
-	 				   insert into cierre values(2022,07,9,'2022-07-20','2022-07-19','2022-07-26');
-	 				   insert into cierre values(2022,08,9,'2022-08-18','2022-08-17','2022-08-23');
-	 				   insert into cierre values(2022,09,9,'2022-09-16','2022-09-15','2022-09-21');
-	 				   insert into cierre values(2022,10,9,'2022-10-18','2022-10-17','2022-10-24');
-	 				   insert into cierre values(2022,11,9,'2022-11-19','2022-11-18','2022-11-25');
-	 				   insert into cierre values(2022,12,9,'2022-12-19','2022-12-18','2022-12-25');`)
-    if err != nil {
-    	log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 
